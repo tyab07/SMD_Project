@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="12dp"
+    android:background="#FFFFFF"
+    android:stretchColumns="1"> <!-- Requirement L7: Column 1 (Course) stretches to fill width -->
+
+    <!-- Table Header Row -->
+    <TableRow
+        android:background="#EEEEEE"
+        android:padding="10dp">
+
+        <TextView
+            android:text="Code"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:textColor="#333333"/>
+
+        <TextView
+            android:text="Course Name"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:textColor="#333333"/>
+
+        <TextView
+            android:text="Time"
+            android:textStyle="bold"
+            android:padding="8dp"
+            android:textColor="#333333"
+            android:gravity="end"/>
+    </TableRow>
+
+    <!-- Divider Line -->
+    <View
+        android:layout_height="1dp"
+        android:background="#DDDDDD"/>
+
+    <!-- Data Row 1: AI -->
+    <TableRow
+        android:padding="10dp">
+
+        <TextView
+            android:text="CS-301"
+            android:padding="8dp"
+            android:textColor="#757575"/>
+
+        <TextView
+            android:text="Artificial Intelligence\nDr. Ahmed Khan"
+            android:padding="8dp"
+            android:textColor="#212121"
+            android:lineSpacingExtra="2dp"/>
+
+        <TextView
+            android:text="10:00 AM"
+            android:padding="8dp"
+            android:textColor="#3F51B5"
+            android:textStyle="bold"
+            android:gravity="end"/>
+    </TableRow>
+
+    <!-- Data Row 2: Mobile App Dev -->
+    <TableRow
+        android:padding="10dp"
+        android:background="#F9F9F9">
+
+        <TextView
+            android:text="CS-402"
+            android:padding="8dp"
+            android:textColor="#757575"/>
+
+        <TextView
+            android:text="Mobile App Dev\nSir Tayyab"
+            android:padding="8dp"
+            android:textColor="#212121"
+            android:lineSpacingExtra="2dp"/>
+
+        <TextView
+            android:text="11:30 AM"
+            android:padding="8dp"
+            android:textColor="#3F51B5"
+            android:textStyle="bold"
+            android:gravity="end"/>
+    </TableRow>
+
+</TableLayout>
