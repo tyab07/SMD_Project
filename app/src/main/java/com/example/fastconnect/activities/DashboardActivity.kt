@@ -5,10 +5,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.fastconnect.R
+import com.example.fastconnect.fragments.BookmarksFragment
 import com.example.fastconnect.fragments.CoursesFragment
 import com.example.fastconnect.fragments.HomeFragment
+import com.example.fastconnect.fragments.NewsFragment
 import com.example.fastconnect.fragments.ProfileFragment
-import com.example.fastconnect.fragments.SocietiesFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /**
@@ -17,14 +18,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
  * This Activity acts ONLY as a container (Modular UI Design constraint).
  * All primary UI content is implemented in Fragments.
  *
- * Requirement F1: Receives user data from SignInActivity via Intent Extras,
- *   then passes it to Fragments via Bundles.
- * Requirement F4: Switches between Fragments using fragment transactions
- *   without restarting the Activity.
+ * Updated for Assignment #03:
+ * - Added NewsFragment for REST API data display (F1)
+ * - Added BookmarksFragment for SQLite CRUD operations (F3)
  */
 class DashboardActivity : AppCompatActivity() {
 
-    // User data received via Intent Extras (F1)
+    // User data received via Intent Extras
     private var userName: String = ""
     private var userEmail: String = ""
 
@@ -32,34 +32,36 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        // F1: Receive user data from SignInActivity via Intent Extras
+        // Receive user data from SignInActivity via Intent Extras
         userName = intent.getStringExtra("USER_NAME") ?: "Student"
         userEmail = intent.getStringExtra("USER_EMAIL") ?: ""
 
         Toast.makeText(this, "Welcome, $userName!", Toast.LENGTH_SHORT).show()
 
-        // Setup BottomNavigationView for fragment switching (F4)
+        // Setup BottomNavigationView for fragment switching
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home -> {
-                    // F1: Pass user data to HomeFragment via Bundle
                     loadFragment(HomeFragment.newInstance(userName, userEmail))
                     true
                 }
+                R.id.nav_news -> {
+                    // F1: Load NewsFragment for REST API data display
+                    loadFragment(NewsFragment.newInstance())
+                    true
+                }
                 R.id.nav_courses -> {
-                    // F4: Switch to CoursesFragment without restarting activity
                     loadFragment(CoursesFragment.newInstance())
                     true
                 }
-                R.id.nav_societies -> {
-                    // F4: Switch to SocietiesFragment without restarting activity
-                    loadFragment(SocietiesFragment.newInstance())
+                R.id.nav_bookmarks -> {
+                    // F3: Load BookmarksFragment for SQLite CRUD
+                    loadFragment(BookmarksFragment.newInstance())
                     true
                 }
                 R.id.nav_profile -> {
-                    // F1: Pass user data to ProfileFragment via Bundle
                     loadFragment(ProfileFragment.newInstance(userName, userEmail))
                     true
                 }
@@ -75,9 +77,6 @@ class DashboardActivity : AppCompatActivity() {
 
     /**
      * Loads a Fragment into the container using fragment transactions.
-     *
-     * Requirement F4: Fragment transactions to switch between fragments
-     * without restarting the activity.
      */
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
@@ -86,8 +85,8 @@ class DashboardActivity : AppCompatActivity() {
     }
 
     /**
-     * Handle back press for fragment back stack (F4).
-     * If CourseDetailFragment is showing, pop back to CoursesFragment.
+     * Handle back press for fragment back stack.
+     * If a child fragment (e.g., CourseDetail, AddEditBookmark) is showing, pop back.
      */
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
