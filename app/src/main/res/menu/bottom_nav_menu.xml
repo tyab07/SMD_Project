@@ -5,13 +5,17 @@
         android:icon="@android:drawable/ic_menu_today"
         android:title="Home" />
     <item
+        android:id="@+id/nav_news"
+        android:icon="@android:drawable/ic_menu_compass"
+        android:title="News" />
+    <item
         android:id="@+id/nav_courses"
         android:icon="@android:drawable/ic_menu_gallery"
         android:title="Courses" />
     <item
-        android:id="@+id/nav_societies"
-        android:icon="@android:drawable/ic_menu_share"
-        android:title="Societies" />
+        android:id="@+id/nav_bookmarks"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:title="Bookmarks" />
     <item
         android:id="@+id/nav_profile"
         android:icon="@android:drawable/ic_menu_myplaces"
