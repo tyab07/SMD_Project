@@ -1,0 +1,199 @@
+===============================================================================
+                    FASTCONNECT - ASSIGNMENT #03 UPDATE LOG
+                    REST API Integration + SQLite Persistence
+===============================================================================
+
+Date: April 25, 2026
+Version: 2.0 (Assignment #03)
+
+===============================================================================
+SUMMARY OF CHANGES
+===============================================================================
+
+This update implements Assignment #03 requirements:
+  - F1: REST API Integration (NewsAPI.org via Retrofit)
+  - F2: SQLite Schema with 2 tables + Foreign Key
+  - F3: Full CRUD operations on bookmarks
+  - F4: Strategy B — API and SQLite as separate functional modules
+  - F5: Dynamic SQL queries (LIKE search, ORDER BY sort, WHERE filter)
+
+Plus enhanced usability features for project excellence.
+
+===============================================================================
+NEW FILES ADDED
+===============================================================================
+
+--- Models ---
+1. app/src/main/java/com/example/fastconnect/models/NewsArticle.kt
+   PURPOSE: Data class mapping REST API JSON fields (title, description,
+   url, urlToImage, publishedAt, source). Used by Retrofit + Gson.
+
+2. app/src/main/java/com/example/fastconnect/models/NewsResponse.kt
+   PURPOSE: Wrapper data class for API response containing status,
+   totalResults, and articles list.
+
+3. app/src/main/java/com/example/fastconnect/models/Bookmark.kt
+   PURPOSE: Data class representing a user bookmark stored in SQLite.
+   Contains id, title, url, note, folderId (FK), folderName, createdAt.
+
+4. app/src/main/java/com/example/fastconnect/models/BookmarkFolder.kt
+   PURPOSE: Data class for bookmark folder/category in SQLite (parent table).
+
+--- API Layer (F1) ---
+5. app/src/main/java/com/example/fastconnect/api/NewsApiService.kt
+   PURPOSE: Retrofit interface for NewsAPI.org. Contains getTopHeadlines()
+   and searchNews() suspend functions. Includes singleton RetrofitClient
+   with OkHttp logging interceptor. All calls use Kotlin Coroutines.
+
+--- Database Layer (F2, F3, F5) ---
+6. app/src/main/java/com/example/fastconnect/db/FastConnectDbHelper.kt
+   PURPOSE: SQLiteOpenHelper subclass implementing:
+   - F2: Two tables (folders, bookmarks) with PK AUTOINCREMENT + Foreign Key
+   - F3: Full CRUD — insertFolder(), getAllFolders(), deleteFolder(),
+     updateFolder(), insertBookmark(), getAllBookmarks(), getBookmarkById(),
+     updateBookmark(), deleteBookmark()
+   - F5: searchBookmarks(query) using SQL LIKE, getBookmarksSorted() using
+     ORDER BY, getBookmarksByFolder() using WHERE clause
+
+--- Adapters ---
+7. app/src/main/java/com/example/fastconnect/adapters/NewsAdapter.kt
+   PURPOSE: RecyclerView adapter for API news articles. Supports click
+   (share), long-click (save to bookmarks), and date formatting.
+
+8. app/src/main/java/com/example/fastconnect/adapters/BookmarkAdapter.kt
+   PURPOSE: RecyclerView adapter for SQLite bookmarks. Supports edit,
+   delete, and share action buttons per item.
+
+--- Fragments (UI) ---
+9. app/src/main/java/com/example/fastconnect/fragments/NewsFragment.kt
+   PURPOSE: Fetches news from REST API using Kotlin Coroutines on
+   Dispatchers.IO. Displays in RecyclerView with pull-to-refresh. Supports
+   sharing and saving news articles to bookmarks (bridges API and DB).
+
+10. app/src/main/java/com/example/fastconnect/fragments/BookmarksFragment.kt
+    PURPOSE: Manages bookmarks via SQLite CRUD with coroutines. Features:
+    - Search bar (F5: SQL LIKE query)
+    - Sort spinner (F5: SQL ORDER BY — Newest, A-Z, Z-A, Oldest)
+    - Folder filter spinner (F5: SQL WHERE clause)
+    - Swipe-to-delete with Snackbar undo
+    - Confirmation dialogs for delete
+    - Share bookmarks via Intent
+    - Empty state view
+    - FAB to add new bookmark
+
+11. app/src/main/java/com/example/fastconnect/fragments/AddEditBookmarkFragment.kt
+    PURPOSE: Form fragment for creating and editing bookmarks. Validates
+    input, saves to SQLite on background thread. Supports folder selection
+    and creating new folders via dialog.
+
+--- Layouts ---
+12. app/src/main/res/layout/fragment_news.xml
+    PURPOSE: News fragment layout with SwipeRefreshLayout, RecyclerView,
+    ProgressBar for loading state, and empty/error state view.
+
+13. app/src/main/res/layout/item_news.xml
+    PURPOSE: News article card with source badge, title, description,
+    date, and share button.
+
+14. app/src/main/res/layout/fragment_bookmarks.xml
+    PURPOSE: Bookmarks fragment with SearchView, sort/filter Spinners,
+    RecyclerView, empty state view, and FloatingActionButton.
+
+15. app/src/main/res/layout/item_bookmark.xml
+    PURPOSE: Bookmark card with folder badge, title, URL, note, date,
+    and edit/delete/share action buttons.
+
+16. app/src/main/res/layout/fragment_add_edit_bookmark.xml
+    PURPOSE: Add/edit bookmark form with TextInputLayouts for title, URL,
+    note, folder Spinner, create-folder button, save and cancel buttons.
+
+===============================================================================
+MODIFIED FILES
+===============================================================================
+
+17. gradle/libs.versions.toml
+    CHANGE: Added version entries and library definitions for:
+    - Retrofit 2.9.0 (REST API client)
+    - Gson converter (JSON parsing)
+    - OkHttp logging interceptor (debugging)
+    - Kotlin Coroutines 1.7.3 (background threading)
+    - Lifecycle runtime KTX 2.9.0 (lifecycleScope)
+    - SwipeRefreshLayout 1.1.0 (pull-to-refresh)
+
+18. app/build.gradle.kts
+    CHANGE: Added implementation dependencies for all new libraries.
+
+19. app/src/main/AndroidManifest.xml
+    CHANGE: Added INTERNET permission for API calls.
+    Added usesCleartextTraffic="true" for network compatibility.
+
+20. app/src/main/res/menu/bottom_nav_menu.xml
+    CHANGE: Added nav_news and nav_bookmarks menu items.
+    Now has 5 tabs: Home, News, Courses, Bookmarks, Profile.
+
+21. app/src/main/java/com/example/fastconnect/activities/DashboardActivity.kt
+    CHANGE: Updated bottom navigation listener to handle News and Bookmarks
+    tabs by loading NewsFragment and BookmarksFragment respectively.
+
+===============================================================================
+ENHANCED USABILITY FEATURES (BONUS)
+===============================================================================
+
+1. SAVE NEWS TO BOOKMARKS: Long-press any news article to save it directly
+   into SQLite bookmarks under the "Saved News" folder. This bridges the
+   API module with the Database module.
+
+2. SHARE FUNCTIONALITY: Both news articles and bookmarks can be shared via
+   Android's share Intent (WhatsApp, email, etc.).
+
+3. FOLDER MANAGEMENT: Create new bookmark folders through an inline dialog
+   in the add/edit bookmark screen.
+
+4. SWIPE-TO-DELETE WITH UNDO: Swipe left on any bookmark to delete it.
+   A Snackbar appears with an "UNDO" action to restore it.
+
+5. EMPTY STATE VIEWS: Friendly empty-state messages with icons are shown
+   when no bookmarks or news exist.
+
+6. CONFIRMATION DIALOGS: AlertDialog appears before deleting bookmarks
+   to prevent accidental data loss.
+
+7. PULL-TO-REFRESH: SwipeRefreshLayout on the News tab allows users
+   to refresh API data by pulling down.
+
+===============================================================================
+BACKGROUND THREADING
+===============================================================================
+
+All network calls and database operations use Kotlin Coroutines:
+- Network calls: lifecycleScope.launch { withContext(Dispatchers.IO) { ... } }
+- Database CRUD: lifecycleScope.launch { withContext(Dispatchers.IO) { ... } }
+- UI updates happen on the main thread after suspend functions complete.
+This ensures the UI never freezes during data operations.
+
+===============================================================================
+DATABASE SCHEMA
+===============================================================================
+
+Table: folders (Parent)
++-----------+---------+------------------+
+| Column    | Type    | Constraint       |
++-----------+---------+------------------+
+| _id       | INTEGER | PK AUTOINCREMENT |
+| name      | TEXT    | NOT NULL UNIQUE  |
+| created_at| TEXT    | NOT NULL         |
++-----------+---------+------------------+
+
+Table: bookmarks (Child)
++-----------+---------+-------------------------------+
+| Column    | Type    | Constraint                    |
++-----------+---------+-------------------------------+
+| _id       | INTEGER | PK AUTOINCREMENT              |
+| title     | TEXT    | NOT NULL                      |
+| url       | TEXT    | NOT NULL                      |
+| note      | TEXT    | DEFAULT ''                    |
+| folder_id | INTEGER | FK → folders(_id) ON DELETE CASCADE |
+| created_at| TEXT    | NOT NULL                      |
++-----------+---------+-------------------------------+
+
+===============================================================================
