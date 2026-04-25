@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastConnect - Logic Map (Assignment #03)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fa;
+            color: #1a1a2e;
+            padding: 40px;
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: linear-gradient(135deg, #3F51B5, #1a237e);
+            border-radius: 16px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header h2 {
+            font-size: 18px;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        .header .meta {
+            margin-top: 16px;
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3F51B5;
+            margin: 32px 0 16px 0;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #3F51B5;
+            display: inline-block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 24px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        thead th {
+            background: #3F51B5;
+            color: white;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody td {
+            padding: 12px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid #eef0f5;
+            vertical-align: top;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .req-id {
+            background: #e8eaf6;
+            color: #3F51B5;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            display: inline-block;
+            white-space: nowrap;
+        }
+
+        .file-name {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #333;
+        }
+
+        .method-name {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #d32f2f;
+            font-weight: 600;
+        }
+
+        .schema-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .schema-section h3 {
+            font-size: 16px;
+            color: #1a237e;
+            margin-bottom: 12px;
+        }
+
+        .schema-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .schema-table th {
+            background: #e8eaf6;
+            color: #1a237e;
+            padding: 10px 14px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .schema-table td {
+            padding: 8px 14px;
+            font-size: 12px;
+            border-bottom: 1px solid #eef0f5;
+            font-family: 'Courier New', monospace;
+        }
+
+        .enhanced-badge {
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
+        }
+
+        @media print {
+            body {
+                padding: 20px;
+                background: white;
+            }
+
+            .header {
+                page-break-after: avoid;
+            }
+
+            table {
+                page-break-inside: avoid;
+            }
+
+            .schema-section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ==================== HEADER ==================== -->
+    <div class="header">
+        <h1>📋 Logic Map — FastConnect</h1>
+        <h2>Assignment #03: REST API Integration &amp; SQLite Persistence</h2>
+        <div class="meta">
+            Course: Mobile Application Development &nbsp;|&nbsp;
+            App: FastConnect (FAST University Campus App) &nbsp;|&nbsp;
+            Date: April 25, 2026
+        </div>
+    </div>
+
+    <!-- ==================== F1: REST API ==================== -->
+    <div class="section-title">F1 — REST API Integration</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Req ID</th>
+                <th>Class / File</th>
+                <th>Function / Method</th>
+                <th>Implementation Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="req-id">F1</span></td>
+                <td><span class="file-name">NewsApiService.kt</span></td>
+                <td><span class="method-name">getTopHeadlines()</span></td>
+                <td>Retrofit suspend function that sends a GET request to <code>newsapi.org/v2/top-headlines</code> with
+                    country and category parameters. Returns <code>NewsResponse</code> containing a list of
+                    <code>NewsArticle</code> objects parsed from JSON via Gson.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F1</span></td>
+                <td><span class="file-name">NewsApiService.kt</span></td>
+                <td><span class="method-name">companion object (RetrofitClient)</span></td>
+                <td>Singleton Retrofit instance with OkHttp logging interceptor. Uses lazy initialization so only one
+                    instance is created throughout the app lifecycle. Base URL set to <code>https://newsapi.org/</code>.
+                </td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F1</span></td>
+                <td><span class="file-name">NewsFragment.kt</span></td>
+                <td><span class="method-name">fetchNews()</span></td>
+                <td>Uses <code>lifecycleScope.launch</code> with <code>withContext(Dispatchers.IO)</code> to call the
+                    API on a background thread. Filters removed articles and updates the RecyclerView adapter. Handles
+                    loading/error/empty states.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F1</span></td>
+                <td><span class="file-name">NewsAdapter.kt</span></td>
+                <td><span class="method-name">onBindViewHolder()</span></td>
+                <td>Binds API data (title, description, source name, formatted date) to item_news.xml card views. Uses
+                    ViewHolder pattern for efficient scrolling.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F1</span></td>
+                <td><span class="file-name">NewsArticle.kt</span></td>
+                <td><span class="method-name">(data class)</span></td>
+                <td>Model mapping API JSON fields: title, description, url, urlToImage, publishedAt, and nested
+                    NewsSource object. Implements Serializable.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F1</span></td>
+                <td><span class="file-name">NewsResponse.kt</span></td>
+                <td><span class="method-name">(data class)</span></td>
+                <td>Wrapper for the full API response body (status, totalResults, articles list). Used by Retrofit's
+                    Gson converter.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ==================== F2: SQLite Schema ==================== -->
+    <div class="section-title">F2 — SQLite Schema Design</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Req ID</th>
+                <th>Class / File</th>
+                <th>Function / Method</th>
+                <th>Implementation Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="req-id">F2</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">onCreate(db)</span></td>
+                <td>Creates two tables using <code>CREATE TABLE</code> SQL statements:
+                    <br>• <b>folders</b> (parent): _id PK AUTOINCREMENT, name TEXT UNIQUE, created_at TEXT
+                    <br>• <b>bookmarks</b> (child): _id PK AUTOINCREMENT, title, url, note, folder_id (FK → folders._id
+                    ON DELETE CASCADE), created_at
+                    <br>Enables PRAGMA foreign_keys = ON. Inserts 4 default folders.
+                </td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F2</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">onOpen(db)</span></td>
+                <td>Ensures foreign key enforcement is enabled every time the database connection opens by executing
+                    <code>PRAGMA foreign_keys = ON</code>.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F2</span></td>
+                <td><span class="file-name">Bookmark.kt</span></td>
+                <td><span class="method-name">(data class)</span></td>
+                <td>Model for child table: id, title, url, note, folderId (FK reference), folderName (populated via
+                    JOIN), createdAt.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F2</span></td>
+                <td><span class="file-name">BookmarkFolder.kt</span></td>
+                <td><span class="method-name">(data class)</span></td>
+                <td>Model for parent table: id, name, createdAt. Bookmarks reference folders through folderId FK.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Schema Diagram -->
+    <div class="schema-section">
+        <h3>📊 Database Schema (ER Relationship)</h3>
+        <div style="display: flex; gap: 32px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 280px;">
+                <h4 style="color:#3F51B5; margin-bottom:8px;">Table: folders (Parent)</h4>
+                <table class="schema-table">
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Constraint</th>
+                    </tr>
+                    <tr>
+                        <td>_id</td>
+                        <td>INTEGER</td>
+                        <td>PRIMARY KEY AUTOINCREMENT</td>
+                    </tr>
+                    <tr>
+                        <td>name</td>
+                        <td>TEXT</td>
+                        <td>NOT NULL UNIQUE</td>
+                    </tr>
+                    <tr>
+                        <td>created_at</td>
+                        <td>TEXT</td>
+                        <td>NOT NULL</td>
+                    </tr>
+                </table>
+            </div>
+            <div style="flex: 1; min-width: 280px;">
+                <h4 style="color:#3F51B5; margin-bottom:8px;">Table: bookmarks (Child)</h4>
+                <table class="schema-table">
+                    <tr>
+                        <th>Column</th>
+                        <th>Type</th>
+                        <th>Constraint</th>
+                    </tr>
+                    <tr>
+                        <td>_id</td>
+                        <td>INTEGER</td>
+                        <td>PRIMARY KEY AUTOINCREMENT</td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td>TEXT</td>
+                        <td>NOT NULL</td>
+                    </tr>
+                    <tr>
+                        <td>url</td>
+                        <td>TEXT</td>
+                        <td>NOT NULL</td>
+                    </tr>
+                    <tr>
+                        <td>note</td>
+                        <td>TEXT</td>
+                        <td>DEFAULT ''</td>
+                    </tr>
+                    <tr>
+                        <td>folder_id</td>
+                        <td>INTEGER</td>
+                        <td>FK → folders(_id) ON DELETE CASCADE</td>
+                    </tr>
+                    <tr>
+                        <td>created_at</td>
+                        <td>TEXT</td>
+                        <td>NOT NULL</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <p style="margin-top:16px; font-size:13px; color:#666;">
+            <b>Relationship:</b> One folder → many bookmarks (1:N). Deleting a folder cascades to delete all its
+            bookmarks.
+        </p>
+    </div>
+
+    <!-- ==================== F3: CRUD ==================== -->
+    <div class="section-title">F3 — Persistent CRUD Operations</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Req ID</th>
+                <th>Class / File</th>
+                <th>Function / Method</th>
+                <th>Implementation Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="req-id">F3-C</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">insertBookmark()</span></td>
+                <td><b>CREATE:</b> Builds a ContentValues object with title, url, note, folderId, and timestamp, then
+                    calls <code>db.insert()</code> on the bookmarks table. Returns the row ID.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-C</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">insertFolder()</span></td>
+                <td><b>CREATE:</b> Inserts a new folder with name and timestamp into the folders table using
+                    <code>db.insert()</code>.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-C</span></td>
+                <td><span class="file-name">AddEditBookmarkFragment.kt</span></td>
+                <td><span class="method-name">saveBookmark()</span></td>
+                <td>Validates form input (title, URL required), gets selected folder from spinner, then calls
+                    <code>dbHelper.insertBookmark()</code> inside <code>withContext(Dispatchers.IO)</code> for
+                    background execution.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-R</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">getAllBookmarks()</span></td>
+                <td><b>READ:</b> Executes a SQL JOIN query:
+                    <code>SELECT b.*, f.name FROM bookmarks b LEFT JOIN folders f ON b.folder_id = f._id ORDER BY created_at DESC</code>.
+                    Iterates cursor and builds Bookmark list.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-R</span></td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">loadBookmarks()</span></td>
+                <td>Calls the appropriate DB read method on <code>Dispatchers.IO</code>, then updates the RecyclerView
+                    adapter and empty state visibility on the main thread.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-U</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">updateBookmark()</span></td>
+                <td><b>UPDATE:</b> Builds ContentValues with new title, url, note, folderId and calls
+                    <code>db.update()</code> with WHERE <code>_id = ?</code>.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-U</span></td>
+                <td><span class="file-name">AddEditBookmarkFragment.kt</span></td>
+                <td><span class="method-name">saveBookmark() [edit mode]</span></td>
+                <td>When editingBookmark is non-null, calls <code>dbHelper.updateBookmark()</code> instead of insert.
+                    Bookmark passed via Bundle (Serializable).</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-D</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">deleteBookmark()</span></td>
+                <td><b>DELETE:</b> Calls <code>db.delete()</code> with WHERE <code>_id = ?</code> to remove a bookmark
+                    row.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-D</span></td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">deleteBookmark()</span></td>
+                <td>Calls <code>dbHelper.deleteBookmark()</code> on <code>Dispatchers.IO</code>, then reloads the list.
+                    Called from confirmation dialog.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F3-D</span></td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">confirmDelete()</span></td>
+                <td>Shows AlertDialog before deleting to prevent accidental data loss. On confirm, calls
+                    <code>deleteBookmark()</code>.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ==================== F4: Data Integration ==================== -->
+    <div class="section-title">F4 — Data Integration Strategy</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Req ID</th>
+                <th>Class / File</th>
+                <th>Function / Method</th>
+                <th>Implementation Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="req-id">F4-B</span></td>
+                <td><span class="file-name">DashboardActivity.kt</span></td>
+                <td><span class="method-name">setOnItemSelectedListener</span></td>
+                <td><b>Strategy B:</b> API (News tab) and SQLite (Bookmarks tab) operate as two separate, independent
+                    functional modules within the same app. Navigation handled via BottomNavigationView with 5 tabs.
+                </td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F4</span></td>
+                <td><span class="file-name">NewsFragment.kt</span></td>
+                <td><span class="method-name">saveArticleAsBookmark()</span></td>
+                <td><b>Bridge Feature:</b> Long-pressing a news article saves it into SQLite bookmarks under the "Saved
+                    News" folder, connecting the API module with the database module. <span
+                        class="enhanced-badge">ENHANCED</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ==================== F5: Dynamic SQL ==================== -->
+    <div class="section-title">F5 — Dynamic SQL Queries</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Req ID</th>
+                <th>Class / File</th>
+                <th>Function / Method</th>
+                <th>Implementation Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="req-id">F5-LIKE</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">searchBookmarks(query)</span></td>
+                <td>Executes:
+                    <code>SELECT ... WHERE title LIKE '%query%' OR url LIKE '%query%' OR note LIKE '%query%'</code>.
+                    Uses parameterized queries to prevent SQL injection.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F5-LIKE</span></td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">searchBookmarks(query)</span></td>
+                <td>Called from SearchView's <code>onQueryTextChange</code> listener. Runs the SQL LIKE query on
+                    <code>Dispatchers.IO</code> and updates the RecyclerView.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F5-ORDER</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">getBookmarksSorted(column, asc)</span></td>
+                <td>Executes: <code>SELECT ... ORDER BY [column] [ASC|DESC]</code>. Validates column name against a
+                    whitelist to prevent SQL injection. Supports sorting by title or created_at.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F5-ORDER</span></td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">setupSortSpinner()</span></td>
+                <td>Spinner with options: "Newest First", "Title A–Z", "Title Z–A", "Oldest First". Each selection
+                    triggers <code>loadBookmarks()</code> which calls the appropriate ORDER BY query.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F5-WHERE</span></td>
+                <td><span class="file-name">FastConnectDbHelper.kt</span></td>
+                <td><span class="method-name">getBookmarksByFolder(folderId)</span></td>
+                <td>Executes: <code>SELECT ... WHERE folder_id = ?</code>. Filters bookmarks belonging to a specific
+                    folder category.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">F5-WHERE</span></td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">setupFolderSpinner()</span></td>
+                <td>Folder filter spinner showing "All Folders" + all folder names. Selecting a folder triggers
+                    WHERE-based filtering.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ==================== Background Threading ==================== -->
+    <div class="section-title">Background Threading (Kotlin Coroutines)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Req ID</th>
+                <th>Class / File</th>
+                <th>Function / Method</th>
+                <th>Implementation Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><span class="req-id">Thread</span></td>
+                <td><span class="file-name">NewsFragment.kt</span></td>
+                <td><span class="method-name">fetchNews()</span></td>
+                <td>Network call wrapped in
+                    <code>lifecycleScope.launch { withContext(Dispatchers.IO) { api.getTopHeadlines() } }</code>.
+                    Prevents UI freeze during API calls.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">Thread</span></td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">loadBookmarks(), searchBookmarks(), deleteBookmark()</span></td>
+                <td>All SQLite read/write operations wrapped in <code>withContext(Dispatchers.IO)</code> to execute on
+                    background threads. UI updates happen automatically on main thread after suspend returns.</td>
+            </tr>
+            <tr>
+                <td><span class="req-id">Thread</span></td>
+                <td><span class="file-name">AddEditBookmarkFragment.kt</span></td>
+                <td><span class="method-name">saveBookmark(), loadFolders(), showCreateFolderDialog()</span></td>
+                <td>All DB insert/update operations and folder loading use <code>withContext(Dispatchers.IO)</code>
+                    within <code>viewLifecycleOwner.lifecycleScope.launch</code>.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ==================== Enhanced Features ==================== -->
+    <div class="section-title">Enhanced Usability Features <span class="enhanced-badge"
+            style="font-size:12px">BONUS</span></div>
+    <table>
+        <thead>
+            <tr>
+                <th>Feature</th>
+                <th>Class / File</th>
+                <th>Function / Method</th>
+                <th>Implementation Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Save News → Bookmarks</td>
+                <td><span class="file-name">NewsFragment.kt</span></td>
+                <td><span class="method-name">saveArticleAsBookmark()</span></td>
+                <td>Long-press on a news article shows AlertDialog to confirm saving. Inserts article into SQLite with
+                    "Saved News" folder. Bridges API and DB modules.</td>
+            </tr>
+            <tr>
+                <td>Share</td>
+                <td><span class="file-name">NewsFragment.kt / BookmarksFragment.kt</span></td>
+                <td><span class="method-name">shareArticle() / shareBookmark()</span></td>
+                <td>Creates Intent.ACTION_SEND with text/plain MIME type and launches share chooser (WhatsApp, email,
+                    etc.).</td>
+            </tr>
+            <tr>
+                <td>Folder Management</td>
+                <td><span class="file-name">AddEditBookmarkFragment.kt</span></td>
+                <td><span class="method-name">showCreateFolderDialog()</span></td>
+                <td>AlertDialog with EditText for entering folder name. Inserts into SQLite and refreshes the folder
+                    spinner.</td>
+            </tr>
+            <tr>
+                <td>Swipe-to-Delete + Undo</td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">setupSwipeToDelete()</span></td>
+                <td>ItemTouchHelper with LEFT swipe. Deletes bookmark, shows Snackbar with "UNDO" action that re-inserts
+                    the bookmark if tapped.</td>
+            </tr>
+            <tr>
+                <td>Pull-to-Refresh</td>
+                <td><span class="file-name">NewsFragment.kt</span></td>
+                <td><span class="method-name">swipeRefresh.setOnRefreshListener</span></td>
+                <td>SwipeRefreshLayout wrapping the news RecyclerView. Pulling down triggers fetchNews() to reload API
+                    data.</td>
+            </tr>
+            <tr>
+                <td>Empty States</td>
+                <td><span class="file-name">fragment_news.xml / fragment_bookmarks.xml</span></td>
+                <td><span class="method-name">showEmpty() / updateEmptyState()</span></td>
+                <td>Friendly empty-state views with emoji icons shown when no data available. Visibility toggled based
+                    on list content.</td>
+            </tr>
+            <tr>
+                <td>Confirmation Dialogs</td>
+                <td><span class="file-name">BookmarksFragment.kt</span></td>
+                <td><span class="method-name">confirmDelete()</span></td>
+                <td>AlertDialog before destructive delete operations to prevent accidental data loss.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ==================== FOOTER ==================== -->
+    <div class="footer">
+        FastConnect — Assignment #03 Logic Map &nbsp;|&nbsp; Generated April 25, 2026
+    </div>
+
+</body>
+
+</html>
