@@ -42,6 +42,19 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+
+    // Retrofit + Gson for REST API (F1)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.gson)
+    implementation(libs.okhttp.logging)
+
+    // Coroutines for background threading
+    implementation(libs.coroutines.android)
+    implementation(libs.lifecycle.runtime.ktx)
+
+    // SwipeRefreshLayout for pull-to-refresh
+    implementation(libs.swiperefreshlayout)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
