@@ -25,7 +25,7 @@ class FastConnectDbHelper(context: Context) :
 
     companion object {
         private const val DATABASE_NAME = "fastconnect.db"
-        private const val DATABASE_VERSION = 1
+        private const val DATABASE_VERSION = 2
 
         // ----- Folders Table (Parent) -----
         const val TABLE_FOLDERS = "folders"
@@ -41,6 +41,40 @@ class FastConnectDbHelper(context: Context) :
         const val COL_BOOKMARK_NOTE = "note"
         const val COL_BOOKMARK_FOLDER_ID = "folder_id"
         const val COL_BOOKMARK_CREATED_AT = "created_at"
+
+        // ----- Users Table -----
+        const val TABLE_USERS = "users"
+        const val COL_USER_ID = "_id"
+        const val COL_USER_NAME = "name"
+        const val COL_USER_EMAIL = "email"
+        const val COL_USER_PASSWORD = "password"
+        const val COL_USER_ROLE = "role"
+
+        // ----- Societies Table -----
+        const val TABLE_SOCIETIES = "societies"
+        const val COL_SOCIETY_ID = "_id"
+        const val COL_SOCIETY_NAME = "name"
+        const val COL_SOCIETY_DESC = "description"
+
+        // ----- Announcements Table -----
+        const val TABLE_ANNOUNCEMENTS = "announcements"
+        const val COL_ANN_ID = "_id"
+        const val COL_ANN_TITLE = "title"
+        const val COL_ANN_DESC = "description"
+        const val COL_ANN_CATEGORY = "category" // course/society
+        const val COL_ANN_TYPE = "type" // announcement/event
+        const val COL_ANN_DATE = "date"
+        const val COL_ANN_SOCIETY_ID = "society_id" // nullable if course
+
+        // ----- User Societies (Follows) Table -----
+        const val TABLE_USER_SOCIETIES = "user_societies"
+        const val COL_US_USER_ID = "user_id"
+        const val COL_US_SOCIETY_ID = "society_id"
+
+        // ----- Saved Events Table -----
+        const val TABLE_SAVED_EVENTS = "saved_events"
+        const val COL_SE_USER_ID = "user_id"
+        const val COL_SE_EVENT_ID = "event_id"
     }
 
     /**
@@ -76,6 +110,64 @@ class FastConnectDbHelper(context: Context) :
         db.execSQL(createFoldersTable)
         db.execSQL(createBookmarksTable)
 
+        // Create new tables
+        val createUsersTable = """
+            CREATE TABLE $TABLE_USERS (
+                $COL_USER_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COL_USER_NAME TEXT NOT NULL,
+                $COL_USER_EMAIL TEXT NOT NULL UNIQUE,
+                $COL_USER_PASSWORD TEXT NOT NULL,
+                $COL_USER_ROLE TEXT NOT NULL
+            );
+        """.trimIndent()
+
+        val createSocietiesTable = """
+            CREATE TABLE $TABLE_SOCIETIES (
+                $COL_SOCIETY_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COL_SOCIETY_NAME TEXT NOT NULL,
+                $COL_SOCIETY_DESC TEXT NOT NULL
+            );
+        """.trimIndent()
+
+        val createAnnouncementsTable = """
+            CREATE TABLE $TABLE_ANNOUNCEMENTS (
+                $COL_ANN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                $COL_ANN_TITLE TEXT NOT NULL,
+                $COL_ANN_DESC TEXT NOT NULL,
+                $COL_ANN_CATEGORY TEXT NOT NULL,
+                $COL_ANN_TYPE TEXT NOT NULL,
+                $COL_ANN_DATE TEXT NOT NULL,
+                $COL_ANN_SOCIETY_ID INTEGER,
+                FOREIGN KEY ($COL_ANN_SOCIETY_ID) REFERENCES $TABLE_SOCIETIES($COL_SOCIETY_ID) ON DELETE CASCADE
+            );
+        """.trimIndent()
+
+        val createUserSocietiesTable = """
+            CREATE TABLE $TABLE_USER_SOCIETIES (
+                $COL_US_USER_ID INTEGER NOT NULL,
+                $COL_US_SOCIETY_ID INTEGER NOT NULL,
+                PRIMARY KEY ($COL_US_USER_ID, $COL_US_SOCIETY_ID),
+                FOREIGN KEY ($COL_US_USER_ID) REFERENCES $TABLE_USERS($COL_USER_ID) ON DELETE CASCADE,
+                FOREIGN KEY ($COL_US_SOCIETY_ID) REFERENCES $TABLE_SOCIETIES($COL_SOCIETY_ID) ON DELETE CASCADE
+            );
+        """.trimIndent()
+
+        val createSavedEventsTable = """
+            CREATE TABLE $TABLE_SAVED_EVENTS (
+                $COL_SE_USER_ID INTEGER NOT NULL,
+                $COL_SE_EVENT_ID INTEGER NOT NULL,
+                PRIMARY KEY ($COL_SE_USER_ID, $COL_SE_EVENT_ID),
+                FOREIGN KEY ($COL_SE_USER_ID) REFERENCES $TABLE_USERS($COL_USER_ID) ON DELETE CASCADE,
+                FOREIGN KEY ($COL_SE_EVENT_ID) REFERENCES $TABLE_ANNOUNCEMENTS($COL_ANN_ID) ON DELETE CASCADE
+            );
+        """.trimIndent()
+
+        db.execSQL(createUsersTable)
+        db.execSQL(createSocietiesTable)
+        db.execSQL(createAnnouncementsTable)
+        db.execSQL(createUserSocietiesTable)
+        db.execSQL(createSavedEventsTable)
+
         // Insert default folders so the user has something to start with
         val now = getCurrentTimestamp()
         insertDefaultFolder(db, "General", now)
@@ -93,6 +185,11 @@ class FastConnectDbHelper(context: Context) :
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_SAVED_EVENTS")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_USER_SOCIETIES")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_ANNOUNCEMENTS")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_SOCIETIES")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_USERS")
         db.execSQL("DROP TABLE IF EXISTS $TABLE_BOOKMARKS")
         db.execSQL("DROP TABLE IF EXISTS $TABLE_FOLDERS")
         onCreate(db)
@@ -365,5 +462,94 @@ class FastConnectDbHelper(context: Context) :
     private fun getCurrentTimestamp(): String {
         val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
         return sdf.format(Date())
+    }
+
+    // ==================== USER OPERATIONS ====================
+
+    fun insertUser(name: String, email: String, passwordHash: String, role: String = "user"): Long {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COL_USER_NAME, name)
+            put(COL_USER_EMAIL, email)
+            put(COL_USER_PASSWORD, passwordHash)
+            put(COL_USER_ROLE, role)
+        }
+        return db.insert(TABLE_USERS, null, values)
+    }
+
+    fun getUserByEmail(email: String): com.example.fastconnect.models.User? {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_USERS WHERE $COL_USER_EMAIL = ?",
+            arrayOf(email)
+        )
+        cursor.use {
+            if (it.moveToFirst()) {
+                return com.example.fastconnect.models.User(
+                    id = it.getLong(it.getColumnIndexOrThrow(COL_USER_ID)),
+                    name = it.getString(it.getColumnIndexOrThrow(COL_USER_NAME)),
+                    email = it.getString(it.getColumnIndexOrThrow(COL_USER_EMAIL)),
+                    role = it.getString(it.getColumnIndexOrThrow(COL_USER_ROLE))
+                )
+            }
+        }
+        return null
+    }
+
+    fun checkUserLogin(email: String, passwordHash: String): com.example.fastconnect.models.User? {
+        val db = readableDatabase
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_USERS WHERE $COL_USER_EMAIL = ? AND $COL_USER_PASSWORD = ?",
+            arrayOf(email, passwordHash)
+        )
+        cursor.use {
+            if (it.moveToFirst()) {
+                return com.example.fastconnect.models.User(
+                    id = it.getLong(it.getColumnIndexOrThrow(COL_USER_ID)),
+                    name = it.getString(it.getColumnIndexOrThrow(COL_USER_NAME)),
+                    email = it.getString(it.getColumnIndexOrThrow(COL_USER_EMAIL)),
+                    role = it.getString(it.getColumnIndexOrThrow(COL_USER_ROLE))
+                )
+            }
+        }
+        return null
+    }
+
+    // ==================== FOLLOW / SAVE OPERATIONS ====================
+
+    fun followSociety(userId: Long, societyId: Long) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COL_US_USER_ID, userId)
+            put(COL_US_SOCIETY_ID, societyId)
+        }
+        db.insertWithOnConflict(TABLE_USER_SOCIETIES, null, values, SQLiteDatabase.CONFLICT_IGNORE)
+    }
+
+    fun saveEvent(userId: Long, eventId: Long) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COL_SE_USER_ID, userId)
+            put(COL_SE_EVENT_ID, eventId)
+        }
+        db.insertWithOnConflict(TABLE_SAVED_EVENTS, null, values, SQLiteDatabase.CONFLICT_IGNORE)
+    }
+
+    fun getAllSocieties(): List<com.example.fastconnect.models.Society> {
+        val societies = mutableListOf<com.example.fastconnect.models.Society>()
+        val db = readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_SOCIETIES", null)
+        cursor.use {
+            while (it.moveToNext()) {
+                societies.add(
+                    com.example.fastconnect.models.Society(
+                        id = it.getLong(it.getColumnIndexOrThrow(COL_SOCIETY_ID)),
+                        name = it.getString(it.getColumnIndexOrThrow(COL_SOCIETY_NAME)),
+                        description = it.getString(it.getColumnIndexOrThrow(COL_SOCIETY_DESC))
+                    )
+                )
+            }
+        }
+        return societies
     }
 }
