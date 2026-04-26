@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FFFFFF"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Create Society"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="24dp" />
+
+    <EditText
+        android:id="@+id/etSocietyName"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:hint="Society Name"
+        android:background="@android:drawable/editbox_background"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp" />
+
+    <EditText
+        android:id="@+id/etSocietyDescription"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:hint="Society Description"
+        android:gravity="top|start"
+        android:inputType="textMultiLine"
+        android:background="@android:drawable/editbox_background"
+        android:padding="12dp"
+        android:layout_marginBottom="32dp" />
+
+    <Button
+        android:id="@+id/btnSubmitSociety"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="SUBMIT"
+        android:backgroundTint="#3F51B5" />
+
+</LinearLayout>

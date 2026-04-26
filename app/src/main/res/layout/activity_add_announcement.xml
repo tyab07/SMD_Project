@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Announcement/Event"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
+
+        <EditText
+            android:id="@+id/etTitle"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="Title"
+            android:background="@android:drawable/editbox_background"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <EditText
+            android:id="@+id/etDesc"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:hint="Description / Details"
+            android:gravity="top|start"
+            android:inputType="textMultiLine"
+            android:background="@android:drawable/editbox_background"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Category Selection -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Category:"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+        
+        <RadioGroup
+            android:id="@+id/rgCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            <RadioButton android:id="@+id/rbCourse" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Course" android:paddingEnd="16dp"/>
+            <RadioButton android:id="@+id/rbSocietyCat" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Society" />
+        </RadioGroup>
+
+        <!-- Society Spinner (Only visible if Society is selected) -->
+        <Spinner
+            android:id="@+id/spinnerSociety"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            android:background="@android:drawable/btn_dropdown" />
+
+        <!-- Type Selection -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Type:"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+        
+        <RadioGroup
+            android:id="@+id/rgType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+            <RadioButton android:id="@+id/rbAnnouncement" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Announcement" android:paddingEnd="16dp"/>
+            <RadioButton android:id="@+id/rbEvent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Event" />
+        </RadioGroup>
+
+        <EditText
+            android:id="@+id/etDate"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="Date (e.g., 2026-05-01)"
+            android:background="@android:drawable/editbox_background"
+            android:padding="12dp"
+            android:layout_marginBottom="32dp" />
+
+        <Button
+            android:id="@+id/btnSubmitAnn"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="SUBMIT"
+            android:backgroundTint="#009688" />
+
+    </LinearLayout>
+</ScrollView>
