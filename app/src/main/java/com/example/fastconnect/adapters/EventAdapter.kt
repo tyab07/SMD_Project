@@ -18,7 +18,8 @@ import com.google.android.material.chip.Chip
  */
 class EventAdapter(
     private val allEvents: List<Event>,
-    private val onEventClick: (Event) -> Unit
+    private val onEventClick: (Event) -> Unit,
+    private val onSaveClick: (Event) -> Unit
 ) : RecyclerView.Adapter<EventAdapter.EventViewHolder>(), Filterable {
 
     // Filtered list shown in the RecyclerView
@@ -34,12 +35,19 @@ class EventAdapter(
         val tvSociety: TextView = itemView.findViewById(R.id.tvSociety)
         val tvVenue: TextView = itemView.findViewById(R.id.tvVenue)
         val tvDate: TextView = itemView.findViewById(R.id.tvDate)
+        val btnSaveEvent: android.widget.ImageView = itemView.findViewById(R.id.btnSaveEvent)
 
         init {
             itemView.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
                     onEventClick(filteredEvents[position])
+                }
+            }
+            btnSaveEvent.setOnClickListener {
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    onSaveClick(filteredEvents[position])
                 }
             }
         }

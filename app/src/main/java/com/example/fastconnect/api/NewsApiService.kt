@@ -48,7 +48,7 @@ interface NewsApiService {
     companion object {
         private const val BASE_URL = "https://newsapi.org/"
         // Free-tier API key for NewsAPI.org
-        const val API_KEY = "e189809dce2e4e8e9aad4be498e5bbce"
+        const val API_KEY = "23b9afc35e8043c388b517e63a48e73e"
 
         /**
          * Singleton Retrofit client instance.
