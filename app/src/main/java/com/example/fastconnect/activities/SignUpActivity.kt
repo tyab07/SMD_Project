@@ -22,12 +22,14 @@ class SignUpActivity : AppCompatActivity() {
 
         val nameInput = findViewById<EditText>(R.id.nameInput)
         val emailInput = findViewById<EditText>(R.id.emailSignUp)
+        val passwordInput = findViewById<EditText>(R.id.passwordSignUp)
         val registerBtn = findViewById<Button>(R.id.btnRegister)
 
-        // F1: Register and pass data back to SignInActivity via Intent
+        // F1: Register and insert to DB
         registerBtn.setOnClickListener {
             val name = nameInput.text.toString().trim()
             val email = emailInput.text.toString().trim()
+            val password = passwordInput.text.toString().trim()
 
             if (name.isEmpty()) {
                 nameInput.error = "Please enter your name"
@@ -37,7 +39,19 @@ class SignUpActivity : AppCompatActivity() {
                 emailInput.error = "Please enter your email"
                 return@setOnClickListener
             }
+            if (password.isEmpty()) {
+                passwordInput.error = "Please enter a password"
+                return@setOnClickListener
+            }
 
+            val dbHelper = com.example.fastconnect.db.FastConnectDbHelper(this)
+            val existing = dbHelper.getUserByEmail(email)
+            if (existing != null) {
+                Toast.makeText(this, "Email already exists! Please log in.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            dbHelper.insertUser(name, email, password, "user")
             Toast.makeText(this, "Account Created Successfully!", Toast.LENGTH_SHORT).show()
 
             // F1: Pass registration data back to SignInActivity via Intent Extras
