@@ -10,7 +10,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fastconnect.R
 import com.example.fastconnect.adapters.EventAdapter
+import com.example.fastconnect.adapters.SocietyAdapter
+import com.example.fastconnect.db.FastConnectDbHelper
 import com.example.fastconnect.models.Event
+import com.example.fastconnect.models.Society
 
 /**
  * SocietiesFragment - Displays society events in a RecyclerView.
@@ -21,7 +24,9 @@ import com.example.fastconnect.models.Event
 class SocietiesFragment : Fragment() {
 
     private lateinit var eventAdapter: EventAdapter
+    private lateinit var societyAdapter: SocietyAdapter
     private lateinit var rvSocieties: RecyclerView
+    private lateinit var rvSocietiesList: RecyclerView
 
     companion object {
         fun newInstance(): SocietiesFragment {
@@ -40,18 +45,38 @@ class SocietiesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // F3: Setup RecyclerView with EventAdapter and custom ViewHolder
+        val dbHelper = FastConnectDbHelper(requireContext())
+        val db = dbHelper.readableDatabase
+
+        val prefs = requireContext().getSharedPreferences("FastConnectPrefs", android.content.Context.MODE_PRIVATE)
+        val userId = prefs.getLong("USER_ID", -1L)
+
+        // F3: Setup Societies List (Top horizontal)
+        rvSocietiesList = view.findViewById(R.id.rvSocietiesList)
+        rvSocietiesList.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        
+        val allSocieties = dbHelper.getAllSocieties()
+        societyAdapter = SocietyAdapter(allSocieties) { society ->
+            dbHelper.followSociety(userId, society.id)
+            android.widget.Toast.makeText(requireContext(), "Followed ${society.name}", android.widget.Toast.LENGTH_SHORT).show()
+        }
+        rvSocietiesList.adapter = societyAdapter
+
+        // F3: Setup Events RecyclerView (Bottom vertical)
         rvSocieties = view.findViewById(R.id.rvSocieties)
         rvSocieties.layoutManager = LinearLayoutManager(requireContext())
 
-        val societyEvents = getSocietyEvents()
-        eventAdapter = EventAdapter(societyEvents) { event ->
+        val societyEvents = getSocietyEventsFromDb(dbHelper)
+        eventAdapter = EventAdapter(societyEvents, { event ->
             android.widget.Toast.makeText(
                 requireContext(),
                 "${event.title}\n${event.description}",
                 android.widget.Toast.LENGTH_LONG
             ).show()
-        }
+        }, { eventToSave ->
+            dbHelper.saveEvent(userId, eventToSave.id.toLong())
+            android.widget.Toast.makeText(requireContext(), "Saved Event!", android.widget.Toast.LENGTH_SHORT).show()
+        })
         rvSocieties.adapter = eventAdapter
 
         // F5: Setup search/filter for society events
@@ -70,64 +95,33 @@ class SocietiesFragment : Fragment() {
     }
 
     /**
-     * Sample society event data for demonstration purposes.
+     * Load events from DB Annoucements table where type is event
      */
-    private fun getSocietyEvents(): List<Event> {
-        return listOf(
-            Event(
-                id = 101,
-                title = "Coding Bootcamp: Web Development",
-                society = "FAST Computing Society",
-                venue = "Lab 01, CS Building",
-                date = "April 3, 2026",
-                category = "Workshop",
-                description = "3-day bootcamp covering HTML, CSS, JavaScript fundamentals."
-            ),
-            Event(
-                id = 102,
-                title = "Line Follower Robot Challenge",
-                society = "Robotics Club",
-                venue = "Engineering Lab",
-                date = "April 7, 2026",
-                category = "Competition",
-                description = "Build and race line-following robots. Teams of 2-3 students."
-            ),
-            Event(
-                id = 103,
-                title = "Public Speaking Workshop",
-                society = "Debating Society",
-                venue = "Seminar Hall A",
-                date = "April 10, 2026",
-                category = "Workshop",
-                description = "Improve your public speaking skills with professional trainers."
-            ),
-            Event(
-                id = 104,
-                title = "Campus Vlog Competition",
-                society = "Media Club",
-                venue = "Online Submission",
-                date = "April 14, 2026",
-                category = "Competition",
-                description = "Create a 3-minute vlog about campus life. Top 3 win prizes!"
-            ),
-            Event(
-                id = 105,
-                title = "Open Source Contribution Day",
-                society = "FAST Computing Society",
-                venue = "Lab 03, CS Building",
-                date = "April 20, 2026",
-                category = "Hackathon",
-                description = "Contribute to real open source projects with mentorship."
-            ),
-            Event(
-                id = 106,
-                title = "Drone Racing Championship",
-                society = "Robotics Club",
-                venue = "Sports Ground",
-                date = "April 24, 2026",
-                category = "Competition",
-                description = "First-person-view drone racing event. Exciting prizes await!"
-            )
-        )
+    private fun getSocietyEventsFromDb(dbHelper: FastConnectDbHelper): List<Event> {
+        val events = mutableListOf<Event>()
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM ${FastConnectDbHelper.TABLE_ANNOUNCEMENTS} WHERE type = 'event'", null)
+        
+        cursor.use {
+            while (it.moveToNext()) {
+                val socIdIndex = it.getColumnIndex(FastConnectDbHelper.COL_ANN_SOCIETY_ID)
+                val socIdStr = if (socIdIndex >= 0 && !it.isNull(socIdIndex)) {
+                    "Society #${it.getLong(socIdIndex)}"
+                } else {
+                    "Course Event"
+                }
+
+                events.add(Event(
+                    id = it.getLong(it.getColumnIndexOrThrow(FastConnectDbHelper.COL_ANN_ID)).toInt(),
+                    title = it.getString(it.getColumnIndexOrThrow(FastConnectDbHelper.COL_ANN_TITLE)),
+                    society = socIdStr,
+                    venue = "Main Campus", // Add venue to DB later if needed
+                    date = it.getString(it.getColumnIndexOrThrow(FastConnectDbHelper.COL_ANN_DATE)),
+                    category = it.getString(it.getColumnIndexOrThrow(FastConnectDbHelper.COL_ANN_CATEGORY)),
+                    description = it.getString(it.getColumnIndexOrThrow(FastConnectDbHelper.COL_ANN_DESC))
+                ))
+            }
+        }
+        return events
     }
 }
