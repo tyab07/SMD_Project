@@ -69,15 +69,22 @@ class HomeFragment : Fragment() {
         rvEvents = view.findViewById(R.id.rvEvents)
         rvEvents.layoutManager = LinearLayoutManager(requireContext())
 
+        val dbHelper = com.example.fastconnect.db.FastConnectDbHelper(requireContext())
+        val prefs = requireContext().getSharedPreferences("FastConnectPrefs", android.content.Context.MODE_PRIVATE)
+        val userId = prefs.getLong("USER_ID", -1L)
+
         val events = getSampleEvents()
-        eventAdapter = EventAdapter(events) { event ->
+        eventAdapter = EventAdapter(events, { event ->
             // Handle event click - could navigate to detail
             android.widget.Toast.makeText(
                 requireContext(),
                 "Event: ${event.title}\n${event.description}",
                 android.widget.Toast.LENGTH_LONG
             ).show()
-        }
+        }, { eventToSave ->
+            dbHelper.saveEvent(userId, eventToSave.id.toLong())
+            android.widget.Toast.makeText(requireContext(), "Saved Event!", android.widget.Toast.LENGTH_SHORT).show()
+        })
         rvEvents.adapter = eventAdapter
 
         // F5: Setup search/filter for events

@@ -9,7 +9,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.fastconnect.R
-import com.example.fastconnect.activities.SignInActivity
+import com.example.fastconnect.activities.RoleSelectionActivity
 
 /**
  * ProfileFragment - Displays user profile information.
@@ -56,10 +56,9 @@ class ProfileFragment : Fragment() {
         view.findViewById<TextView>(R.id.tvProfileName).text = userName
         view.findViewById<TextView>(R.id.tvProfileEmail).text = "📧 $userEmail"
 
-        // Logout functionality
         view.findViewById<TextView>(R.id.tvLogout).setOnClickListener {
             Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()
-            val intent = Intent(requireContext(), SignInActivity::class.java)
+            val intent = Intent(requireContext(), RoleSelectionActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
