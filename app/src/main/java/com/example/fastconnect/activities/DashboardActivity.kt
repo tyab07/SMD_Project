@@ -10,6 +10,7 @@ import com.example.fastconnect.fragments.CoursesFragment
 import com.example.fastconnect.fragments.HomeFragment
 import com.example.fastconnect.fragments.NewsFragment
 import com.example.fastconnect.fragments.ProfileFragment
+import com.example.fastconnect.fragments.SocietiesFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 /**
@@ -54,6 +55,10 @@ class DashboardActivity : AppCompatActivity() {
                 }
                 R.id.nav_courses -> {
                     loadFragment(CoursesFragment.newInstance())
+                    true
+                }
+                R.id.nav_societies -> {
+                    loadFragment(SocietiesFragment.newInstance())
                     true
                 }
                 R.id.nav_bookmarks -> {
