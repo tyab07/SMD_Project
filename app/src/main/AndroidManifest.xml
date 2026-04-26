@@ -24,8 +24,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Sign In Screen -->
+        
+        <activity android:name=".activities.RoleSelectionActivity" />
+        
+        <!-- Feature Activities -->
         <activity android:name=".activities.SignInActivity" />
 
         <!-- Sign Up Screen -->
@@ -33,6 +35,11 @@
 
         <!-- Dashboard - Main Fragment Container -->
         <activity android:name=".activities.DashboardActivity" />
+
+        <!-- Admin Flows -->
+        <activity android:name=".activities.AdminDashboardActivity" />
+        <activity android:name=".activities.AddSocietyActivity" />
+        <activity android:name=".activities.AddAnnouncementActivity" />
 
     </application>
 
