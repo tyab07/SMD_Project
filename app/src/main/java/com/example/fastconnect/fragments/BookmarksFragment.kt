@@ -12,32 +12,26 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fastconnect.R
 import com.example.fastconnect.adapters.BookmarkAdapter
-import com.example.fastconnect.db.FastConnectDbHelper
+import com.example.fastconnect.firebase.FirebaseHelper
 import com.example.fastconnect.models.Bookmark
 import com.example.fastconnect.models.BookmarkFolder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
- * BookmarksFragment - Manages user bookmarks using SQLite CRUD (F3).
+ * BookmarksFragment — Manages user bookmarks using Firebase Realtime Database (F2).
  *
- * F3: Full CRUD operations on bookmarks from local SQLite database.
- * F5: Dynamic SQL queries — search (LIKE), sort (ORDER BY), filter by folder.
- * Threading: All database operations run on Dispatchers.IO via Kotlin Coroutines.
- * Enhanced: Swipe-to-delete with undo, confirmation dialogs, share, empty state.
+ * Updated for Assignment#04: All CRUD operations now use FirebaseHelper
+ * instead of local SQLite. Data is stored per-user at /users/{uid}/bookmarks/.
+ * Search, sort, and folder filter are done client-side after fetching from Firebase.
  */
 class BookmarksFragment : Fragment() {
 
-    private lateinit var dbHelper: FastConnectDbHelper
     private lateinit var bookmarkAdapter: BookmarkAdapter
     private lateinit var rvBookmarks: RecyclerView
     private lateinit var searchView: SearchView
@@ -47,7 +41,7 @@ class BookmarksFragment : Fragment() {
     private lateinit var emptyLayout: View
 
     private var folders: List<BookmarkFolder> = emptyList()
-    private var selectedFolderId: Long = -1L  // -1 = All folders
+    private var selectedFolderId: String = ""  // empty = All folders
     private var currentSortIndex = 0
 
     companion object {
@@ -62,8 +56,6 @@ class BookmarksFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        dbHelper = FastConnectDbHelper(requireContext())
 
         // Bind views
         rvBookmarks = view.findViewById(R.id.rvBookmarks)
@@ -83,16 +75,16 @@ class BookmarksFragment : Fragment() {
         )
         rvBookmarks.adapter = bookmarkAdapter
 
-        // Setup swipe-to-delete with undo (Enhanced)
+        // Setup swipe-to-delete with undo
         setupSwipeToDelete()
 
-        // Setup sort spinner (F5 - ORDER BY)
+        // Setup sort spinner
         setupSortSpinner()
 
-        // Setup folder filter spinner (F5 - WHERE clause)
+        // Setup folder filter spinner
         setupFolderSpinner()
 
-        // Setup search (F5 - LIKE query)
+        // Setup search
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 searchBookmarks(query ?: "")
@@ -118,59 +110,42 @@ class BookmarksFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Reload when returning from add/edit
         loadFolders()
         loadBookmarks()
     }
 
-    // ==================== F3: CRUD - Read ====================
+    // ==================== Read (Firebase) ====================
 
     /**
-     * F3 - Read: Loads all bookmarks from SQLite on a background thread.
+     * Loads all bookmarks from Firebase Realtime Database.
      */
     private fun loadBookmarks() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val bookmarks = withContext(Dispatchers.IO) {
-                if (selectedFolderId == -1L) {
-                    when (currentSortIndex) {
-                        1 -> dbHelper.getBookmarksSorted(FastConnectDbHelper.COL_BOOKMARK_TITLE, true)
-                        2 -> dbHelper.getBookmarksSorted(FastConnectDbHelper.COL_BOOKMARK_TITLE, false)
-                        3 -> dbHelper.getBookmarksSorted(FastConnectDbHelper.COL_BOOKMARK_CREATED_AT, true)
-                        else -> dbHelper.getAllBookmarks()
-                    }
-                } else {
-                    dbHelper.getBookmarksByFolder(selectedFolderId)
-                }
+        if (selectedFolderId.isEmpty()) {
+            when (currentSortIndex) {
+                1 -> FirebaseHelper.getBookmarksSorted("title", true) { updateUI(it) }
+                2 -> FirebaseHelper.getBookmarksSorted("title", false) { updateUI(it) }
+                3 -> FirebaseHelper.getBookmarksSorted("createdAt", true) { updateUI(it) }
+                else -> FirebaseHelper.getAllBookmarks { updateUI(it) }
             }
-            bookmarkAdapter.updateBookmarks(bookmarks)
-            updateEmptyState(bookmarks.isEmpty())
+        } else {
+            FirebaseHelper.getBookmarksByFolder(selectedFolderId) { updateUI(it) }
         }
     }
 
-    // ==================== F5: Dynamic SQL - Search (LIKE) ====================
+    private fun updateUI(bookmarks: List<Bookmark>) {
+        if (!isAdded) return
+        bookmarkAdapter.updateBookmarks(bookmarks)
+        updateEmptyState(bookmarks.isEmpty())
+    }
 
-    /**
-     * F5 - Search: Searches bookmarks using SQL LIKE operator.
-     */
+    // ==================== Search (Firebase) ====================
+
     private fun searchBookmarks(query: String) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            val bookmarks = withContext(Dispatchers.IO) {
-                if (query.isEmpty()) {
-                    dbHelper.getAllBookmarks()
-                } else {
-                    dbHelper.searchBookmarks(query)
-                }
-            }
-            bookmarkAdapter.updateBookmarks(bookmarks)
-            updateEmptyState(bookmarks.isEmpty())
-        }
+        FirebaseHelper.searchBookmarks(query) { updateUI(it) }
     }
 
-    // ==================== F5: Dynamic SQL - Sort (ORDER BY) ====================
+    // ==================== Sort ====================
 
-    /**
-     * F5: Setup sort spinner for ORDER BY queries.
-     */
     private fun setupSortSpinner() {
         val sortOptions = arrayOf("Newest First", "Title A–Z", "Title Z–A", "Oldest First")
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, sortOptions)
@@ -186,18 +161,16 @@ class BookmarksFragment : Fragment() {
         }
     }
 
-    // ==================== F5: Dynamic SQL - Filter (WHERE) ====================
+    // ==================== Folder Filter ====================
 
-    /**
-     * F5: Setup folder filter spinner.
-     */
     private fun setupFolderSpinner() {
         loadFolders()
     }
 
     private fun loadFolders() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            folders = withContext(Dispatchers.IO) { dbHelper.getAllFolders() }
+        FirebaseHelper.getAllFolders { folderList ->
+            if (!isAdded) return@getAllFolders
+            folders = folderList
             val folderNames = mutableListOf("All Folders")
             folderNames.addAll(folders.map { it.name })
 
@@ -207,7 +180,7 @@ class BookmarksFragment : Fragment() {
 
             spinnerFolder.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                 override fun onItemSelected(parent: AdapterView<*>?, v: View?, position: Int, id: Long) {
-                    selectedFolderId = if (position == 0) -1L else folders[position - 1].id
+                    selectedFolderId = if (position == 0) "" else folders[position - 1].id
                     loadBookmarks()
                 }
                 override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -215,11 +188,8 @@ class BookmarksFragment : Fragment() {
         }
     }
 
-    // ==================== F3: CRUD - Delete ====================
+    // ==================== Delete (Firebase) ====================
 
-    /**
-     * Enhanced: Confirmation dialog before deleting a bookmark.
-     */
     private fun confirmDelete(bookmark: Bookmark) {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Bookmark")
@@ -229,24 +199,20 @@ class BookmarksFragment : Fragment() {
             .show()
     }
 
-    /**
-     * F3 - Delete: Removes a bookmark from SQLite on a background thread.
-     */
     private fun deleteBookmark(bookmark: Bookmark) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                dbHelper.deleteBookmark(bookmark.id)
+        FirebaseHelper.deleteBookmark(bookmark.id) { success ->
+            if (!isAdded) return@deleteBookmark
+            if (success) {
+                loadBookmarks()
+                Toast.makeText(requireContext(), "🗑️ Bookmark deleted", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(requireContext(), "Failed to delete", Toast.LENGTH_SHORT).show()
             }
-            loadBookmarks()
-            Toast.makeText(requireContext(), "🗑️ Bookmark deleted", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // ==================== Enhanced: Swipe-to-Delete with Undo ====================
+    // ==================== Swipe-to-Delete ====================
 
-    /**
-     * Enhanced: Swipe-to-delete with Snackbar undo action.
-     */
     private fun setupSwipeToDelete() {
         val swipeCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
             override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder) = false
@@ -255,27 +221,21 @@ class BookmarksFragment : Fragment() {
                 val position = viewHolder.adapterPosition
                 val bookmark = bookmarkAdapter.getBookmarkAt(position)
 
-                // Delete the bookmark
-                viewLifecycleOwner.lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        dbHelper.deleteBookmark(bookmark.id)
-                    }
-                    loadBookmarks()
-
-                    // Show Snackbar with undo option
-                    Snackbar.make(rvBookmarks, "Bookmark deleted", Snackbar.LENGTH_LONG)
-                        .setAction("UNDO") {
-                            viewLifecycleOwner.lifecycleScope.launch {
-                                withContext(Dispatchers.IO) {
-                                    dbHelper.insertBookmark(
-                                        bookmark.title, bookmark.url,
-                                        bookmark.note, bookmark.folderId
-                                    )
+                FirebaseHelper.deleteBookmark(bookmark.id) { success ->
+                    if (!isAdded) return@deleteBookmark
+                    if (success) {
+                        loadBookmarks()
+                        Snackbar.make(rvBookmarks, "Bookmark deleted", Snackbar.LENGTH_LONG)
+                            .setAction("UNDO") {
+                                FirebaseHelper.insertBookmark(
+                                    bookmark.title, bookmark.url,
+                                    bookmark.note, bookmark.folderId
+                                ) { undoSuccess ->
+                                    if (undoSuccess) loadBookmarks()
                                 }
-                                loadBookmarks()
                             }
-                        }
-                        .show()
+                            .show()
+                    }
                 }
             }
         }
@@ -284,9 +244,6 @@ class BookmarksFragment : Fragment() {
 
     // ==================== Navigation ====================
 
-    /**
-     * F3 - Update: Navigate to AddEditBookmarkFragment in edit mode.
-     */
     private fun navigateToEdit(bookmark: Bookmark) {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, AddEditBookmarkFragment.newInstance(bookmark))
@@ -294,9 +251,6 @@ class BookmarksFragment : Fragment() {
             .commit()
     }
 
-    /**
-     * Enhanced: Share bookmark via Android share Intent.
-     */
     private fun shareBookmark(bookmark: Bookmark) {
         val shareText = "${bookmark.title}\n${bookmark.url}"
         val intent = Intent(Intent.ACTION_SEND).apply {

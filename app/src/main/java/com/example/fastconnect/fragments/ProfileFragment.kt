@@ -9,13 +9,16 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.fastconnect.R
+import com.example.fastconnect.activities.NotificationInboxActivity
 import com.example.fastconnect.activities.RoleSelectionActivity
+import com.example.fastconnect.firebase.FirebaseHelper
+import com.google.firebase.auth.FirebaseAuth
 
 /**
- * ProfileFragment - Displays user profile information.
+ * ProfileFragment — Displays user profile information from Firebase Auth (F1).
  *
- * Requirement F1: Receives user data (name, email) via Bundle,
- *   originally passed from SignInActivity → DashboardActivity → ProfileFragment.
+ * Updated for Assignment#04: Reads data from FirebaseAuth.currentUser
+ * and Firebase Realtime Database. Uses FirebaseAuth.signOut() for logout.
  */
 class ProfileFragment : Fragment() {
 
@@ -23,10 +26,6 @@ class ProfileFragment : Fragment() {
         private const val ARG_USER_NAME = "user_name"
         private const val ARG_USER_EMAIL = "user_email"
 
-        /**
-         * Factory method to create ProfileFragment with user data via Bundle.
-         * Requirement F1: Data passing via Bundle from Activity to Fragment.
-         */
         fun newInstance(userName: String, userEmail: String): ProfileFragment {
             val fragment = ProfileFragment()
             val args = Bundle()
@@ -48,15 +47,35 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // F1: Retrieve user data from Bundle
-        val userName = arguments?.getString(ARG_USER_NAME) ?: "Muhammad Tayyab"
-        val userEmail = arguments?.getString(ARG_USER_EMAIL) ?: "tayyab@fast.edu.pk"
+        val auth = FirebaseAuth.getInstance()
+        val currentUser = auth.currentUser
 
-        // Display user data received via Bundle
+        // Get user data from Bundle or Firebase Auth
+        val userName = arguments?.getString(ARG_USER_NAME)
+            ?: currentUser?.displayName
+            ?: "Muhammad Tayyab"
+        val userEmail = arguments?.getString(ARG_USER_EMAIL)
+            ?: currentUser?.email
+            ?: "tayyab@fast.edu.pk"
+
+        // Display user data
         view.findViewById<TextView>(R.id.tvProfileName).text = userName
         view.findViewById<TextView>(R.id.tvProfileEmail).text = "📧 $userEmail"
 
+        // Notifications (Jetpack Compose screen)
+        view.findViewById<TextView>(R.id.tvNotifications).setOnClickListener {
+            startActivity(Intent(requireContext(), NotificationInboxActivity::class.java))
+        }
+
+        // Logout with Firebase Auth signOut
         view.findViewById<TextView>(R.id.tvLogout).setOnClickListener {
+            // Sign out from Firebase Auth
+            auth.signOut()
+
+            // Clear local session
+            val prefs = requireContext().getSharedPreferences("FastConnectPrefs", android.content.Context.MODE_PRIVATE)
+            prefs.edit().clear().apply()
+
             Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show()
             val intent = Intent(requireContext(), RoleSelectionActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
