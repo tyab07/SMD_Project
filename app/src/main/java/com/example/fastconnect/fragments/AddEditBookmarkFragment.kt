@@ -11,28 +11,21 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.example.fastconnect.R
-import com.example.fastconnect.db.FastConnectDbHelper
+import com.example.fastconnect.firebase.FirebaseHelper
 import com.example.fastconnect.models.Bookmark
 import com.example.fastconnect.models.BookmarkFolder
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 /**
- * AddEditBookmarkFragment - Form for creating and updating bookmarks (F3).
+ * AddEditBookmarkFragment — Form for creating and updating bookmarks (F2).
  *
- * F3 - Create: Inserts a new bookmark into the SQLite database.
- * F3 - Update: Updates an existing bookmark's fields in the SQLite database.
- * Threading: All database operations run on Dispatchers.IO via Kotlin Coroutines.
- * Enhanced: Folder management dialog for creating new folders.
+ * Updated for Assignment#04: All operations use FirebaseHelper
+ * to read/write at /users/{uid}/bookmarks/ and /users/{uid}/folders/.
  */
 class AddEditBookmarkFragment : Fragment() {
 
-    private lateinit var dbHelper: FastConnectDbHelper
     private lateinit var etTitle: TextInputEditText
     private lateinit var etUrl: TextInputEditText
     private lateinit var etNote: TextInputEditText
@@ -48,14 +41,8 @@ class AddEditBookmarkFragment : Fragment() {
     companion object {
         private const val ARG_BOOKMARK = "bookmark_object"
 
-        /**
-         * Factory: Create fragment for ADD mode (no bookmark argument).
-         */
         fun newInstance(): AddEditBookmarkFragment = AddEditBookmarkFragment()
 
-        /**
-         * Factory: Create fragment for EDIT mode (bookmark passed via Bundle).
-         */
         fun newInstance(bookmark: Bookmark): AddEditBookmarkFragment {
             val fragment = AddEditBookmarkFragment()
             val args = Bundle()
@@ -73,8 +60,6 @@ class AddEditBookmarkFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        dbHelper = FastConnectDbHelper(requireContext())
 
         // Bind views
         tvHeader = view.findViewById(R.id.tvAddEditHeader)
@@ -95,27 +80,28 @@ class AddEditBookmarkFragment : Fragment() {
             populateFields(editingBookmark!!)
         }
 
-        // Load folders into spinner
+        // Load folders from Firebase
         loadFolders()
 
-        // Save button action
+        // Save button
         btnSave.setOnClickListener { saveBookmark() }
 
-        // Cancel button action
+        // Cancel button
         btnCancel.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
 
-        // Enhanced: Create new folder dialog
+        // Create new folder dialog
         btnCreateFolder.setOnClickListener { showCreateFolderDialog() }
     }
 
     /**
-     * Loads folders from SQLite into the spinner on a background thread.
+     * Loads folders from Firebase into the spinner.
      */
     private fun loadFolders() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            folders = withContext(Dispatchers.IO) { dbHelper.getAllFolders() }
+        FirebaseHelper.getAllFolders { folderList ->
+            if (!isAdded) return@getAllFolders
+            folders = folderList
             val folderNames = folders.map { it.name }
             val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, folderNames)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -129,9 +115,6 @@ class AddEditBookmarkFragment : Fragment() {
         }
     }
 
-    /**
-     * Populates form fields with existing bookmark data (for edit mode).
-     */
     private fun populateFields(bookmark: Bookmark) {
         etTitle.setText(bookmark.title)
         etUrl.setText(bookmark.url)
@@ -139,14 +122,13 @@ class AddEditBookmarkFragment : Fragment() {
     }
 
     /**
-     * F3 - Create/Update: Validates input and saves bookmark to SQLite on a background thread.
+     * Validates input and saves bookmark to Firebase.
      */
     private fun saveBookmark() {
         val title = etTitle.text?.toString()?.trim() ?: ""
         val url = etUrl.text?.toString()?.trim() ?: ""
         val note = etNote.text?.toString()?.trim() ?: ""
 
-        // Validate input
         if (title.isEmpty()) {
             etTitle.error = "Please enter a title"
             return
@@ -162,37 +144,48 @@ class AddEditBookmarkFragment : Fragment() {
 
         val selectedFolder = folders[spinnerFolder.selectedItemPosition]
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            withContext(Dispatchers.IO) {
-                if (editingBookmark != null) {
-                    // F3 - Update: Update existing bookmark
-                    dbHelper.updateBookmark(
-                        id = editingBookmark!!.id,
-                        title = title,
-                        url = url,
-                        note = note,
-                        folderId = selectedFolder.id
-                    )
+        btnSave.isEnabled = false
+
+        if (editingBookmark != null) {
+            // Update existing bookmark in Firebase
+            FirebaseHelper.updateBookmark(
+                id = editingBookmark!!.id,
+                title = title,
+                url = url,
+                note = note,
+                folderId = selectedFolder.id
+            ) { success ->
+                if (!isAdded) return@updateBookmark
+                if (success) {
+                    Toast.makeText(requireContext(), "✅ Bookmark updated!", Toast.LENGTH_SHORT).show()
+                    parentFragmentManager.popBackStack()
                 } else {
-                    // F3 - Create: Insert new bookmark
-                    dbHelper.insertBookmark(
-                        title = title,
-                        url = url,
-                        note = note,
-                        folderId = selectedFolder.id
-                    )
+                    btnSave.isEnabled = true
+                    Toast.makeText(requireContext(), "Failed to update. Try again.", Toast.LENGTH_SHORT).show()
                 }
             }
-
-            val message = if (editingBookmark != null) "✅ Bookmark updated!" else "✅ Bookmark saved!"
-            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-            parentFragmentManager.popBackStack()
+        } else {
+            // Insert new bookmark into Firebase
+            FirebaseHelper.insertBookmark(
+                title = title,
+                url = url,
+                note = note,
+                folderId = selectedFolder.id
+            ) { success ->
+                if (!isAdded) return@insertBookmark
+                if (success) {
+                    Toast.makeText(requireContext(), "✅ Bookmark saved!", Toast.LENGTH_SHORT).show()
+                    parentFragmentManager.popBackStack()
+                } else {
+                    btnSave.isEnabled = true
+                    Toast.makeText(requireContext(), "Failed to save. Try again.", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
     /**
-     * Enhanced: Shows a dialog to create a new bookmark folder.
-     * Inserts the folder into SQLite and refreshes the spinner.
+     * Shows a dialog to create a new bookmark folder in Firebase.
      */
     private fun showCreateFolderDialog() {
         val input = EditText(requireContext())
@@ -209,15 +202,13 @@ class AddEditBookmarkFragment : Fragment() {
                     return@setPositiveButton
                 }
 
-                viewLifecycleOwner.lifecycleScope.launch {
-                    val result = withContext(Dispatchers.IO) {
-                        dbHelper.insertFolder(folderName)
-                    }
-                    if (result > 0) {
+                FirebaseHelper.insertFolder(folderName) { success, _ ->
+                    if (!isAdded) return@insertFolder
+                    if (success) {
                         Toast.makeText(requireContext(), "📁 Folder created!", Toast.LENGTH_SHORT).show()
                         loadFolders()
                     } else {
-                        Toast.makeText(requireContext(), "Folder already exists or error occurred", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Failed to create folder", Toast.LENGTH_SHORT).show()
                     }
                 }
             }
