@@ -5,34 +5,34 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fastconnect.R
 import com.example.fastconnect.adapters.EventAdapter
+import com.example.fastconnect.firebase.FirebaseHelper
 import com.example.fastconnect.models.Event
+import com.google.firebase.database.ValueEventListener
 
 /**
- * HomeFragment - Displays welcome message and campus events.
+ * HomeFragment — Displays welcome message and campus events from Firebase (F2).
  *
- * Requirement F1: Receives user data via Bundle (passed from DashboardActivity).
- * Requirement F3: Uses RecyclerView with EventAdapter + ViewHolder.
- * Requirement F5: Search/filter for events.
+ * Updated for Assignment#04: Loads events from Firebase Realtime Database
+ * with real-time sync using ValueEventListener. Falls back to sample data
+ * if no events exist in Firebase yet.
  */
 class HomeFragment : Fragment() {
 
     private lateinit var eventAdapter: EventAdapter
     private lateinit var rvEvents: RecyclerView
+    private var announcementsListener: ValueEventListener? = null
 
     companion object {
         private const val ARG_USER_NAME = "user_name"
         private const val ARG_USER_EMAIL = "user_email"
 
-        /**
-         * Factory method to create HomeFragment with user data via Bundle.
-         * Requirement F1 & F2: Data passing via Bundle.
-         */
         fun newInstance(userName: String, userEmail: String): HomeFragment {
             val fragment = HomeFragment()
             val args = Bundle()
@@ -54,47 +54,57 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // F1: Retrieve user data passed via Bundle
         val userName = arguments?.getString(ARG_USER_NAME) ?: "Student"
         val userEmail = arguments?.getString(ARG_USER_EMAIL) ?: ""
 
-        // Set welcome text with user name from Bundle data
         val tvWelcome = view.findViewById<TextView>(R.id.tvWelcomeUser)
         tvWelcome.text = "Welcome, $userName! 👋"
 
         val tvSubtitle = view.findViewById<TextView>(R.id.tvWelcomeSubtitle)
         tvSubtitle.text = if (userEmail.isNotEmpty()) userEmail else "Stay connected with FAST"
 
-        // F3: Setup RecyclerView with EventAdapter and ViewHolder
+        val btnProfile = view.findViewById<android.widget.ImageView>(R.id.btnProfile)
+        btnProfile.setOnClickListener {
+            // Navigate to ProfileFragment when profile icon is clicked
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, ProfileFragment.newInstance(userName, userEmail))
+                .addToBackStack("profile")
+                .commit()
+        }
+
+        // Setup RecyclerView
         rvEvents = view.findViewById(R.id.rvEvents)
         rvEvents.layoutManager = LinearLayoutManager(requireContext())
 
-        val dbHelper = com.example.fastconnect.db.FastConnectDbHelper(requireContext())
-        val prefs = requireContext().getSharedPreferences("FastConnectPrefs", android.content.Context.MODE_PRIVATE)
-        val userId = prefs.getLong("USER_ID", -1L)
-
-        val events = getSampleEvents()
-        eventAdapter = EventAdapter(events, { event ->
-            // Handle event click - could navigate to detail
-            android.widget.Toast.makeText(
+        // Initialize with empty adapter, will be replaced by Firebase data
+        eventAdapter = EventAdapter(emptyList(), { event ->
+            Toast.makeText(
                 requireContext(),
                 "Event: ${event.title}\n${event.description}",
-                android.widget.Toast.LENGTH_LONG
+                Toast.LENGTH_LONG
             ).show()
         }, { eventToSave ->
-            dbHelper.saveEvent(userId, eventToSave.id.toLong())
-            android.widget.Toast.makeText(requireContext(), "Saved Event!", android.widget.Toast.LENGTH_SHORT).show()
+            // F2: Save event to Firebase
+            FirebaseHelper.saveEvent(eventToSave.id.toString()) { success ->
+                if (success) {
+                    Toast.makeText(requireContext(), "Saved Event!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Failed to save event", Toast.LENGTH_SHORT).show()
+                }
+            }
         })
         rvEvents.adapter = eventAdapter
 
-        // F5: Setup search/filter for events
+        // F2: Load events from Firebase Realtime Database with real-time sync
+        loadEventsFromFirebase()
+
+        // Search/filter for events
         val searchView = view.findViewById<SearchView>(R.id.searchViewEvents)
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 eventAdapter.filter.filter(query)
                 return true
             }
-
             override fun onQueryTextChange(newText: String?): Boolean {
                 eventAdapter.filter.filter(newText)
                 return true
@@ -103,7 +113,58 @@ class HomeFragment : Fragment() {
     }
 
     /**
-     * Sample event data for demonstration purposes.
+     * F2: Observe announcements from Firebase with real-time listener.
+     * Converts announcement maps to Event objects for the EventAdapter.
+     */
+    private fun loadEventsFromFirebase() {
+        announcementsListener = FirebaseHelper.observeAnnouncements { announcementMaps ->
+            if (!isAdded) return@observeAnnouncements
+
+            val events = if (announcementMaps.isEmpty()) {
+                // Fallback to sample events if Firebase has no data yet
+                getSampleEvents()
+            } else {
+                announcementMaps.mapIndexed { index, map ->
+                    Event(
+                        id = index + 1,
+                        title = map["title"]?.toString() ?: "",
+                        society = map["societyId"]?.toString() ?: "Campus",
+                        venue = "Main Campus",
+                        date = map["date"]?.toString() ?: "",
+                        category = map["category"]?.toString() ?: "",
+                        description = map["description"]?.toString() ?: ""
+                    )
+                }
+            }
+
+            // Update adapter with new data (real-time sync)
+            eventAdapter = EventAdapter(events, { event ->
+                Toast.makeText(
+                    requireContext(),
+                    "Event: ${event.title}\n${event.description}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }, { eventToSave ->
+                FirebaseHelper.saveEvent(eventToSave.id.toString()) { success ->
+                    if (success) {
+                        Toast.makeText(requireContext(), "Saved Event!", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            })
+            rvEvents.adapter = eventAdapter
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Clean up Firebase listener to prevent memory leaks
+        announcementsListener?.let {
+            FirebaseHelper.removeAnnouncementsListener(it)
+        }
+    }
+
+    /**
+     * Fallback sample event data when Firebase has no announcements yet.
      */
     private fun getSampleEvents(): List<Event> {
         return listOf(
