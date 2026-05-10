@@ -1,14 +1,19 @@
 package com.example.fastconnect.activities
 
-import android.content.ContentValues
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fastconnect.R
-import com.example.fastconnect.db.FastConnectDbHelper
+import com.example.fastconnect.firebase.FirebaseHelper
 
+/**
+ * AddSocietyActivity — Admin screen to create a new society.
+ *
+ * Updated for Assignment#04: Writes to Firebase Realtime Database
+ * at /societies/{pushId} instead of local SQLite.
+ */
 class AddSocietyActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,15 +33,20 @@ class AddSocietyActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val db = FastConnectDbHelper(this).writableDatabase
-            val values = ContentValues().apply {
-                put(FastConnectDbHelper.COL_SOCIETY_NAME, name)
-                put(FastConnectDbHelper.COL_SOCIETY_DESC, desc)
+            btnSubmit.isEnabled = false
+            btnSubmit.text = "Creating..."
+
+            // F2: Write to Firebase Realtime Database
+            FirebaseHelper.addSociety(name, desc) { success ->
+                if (success) {
+                    Toast.makeText(this, "Society created successfully!", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    btnSubmit.isEnabled = true
+                    btnSubmit.text = "Submit"
+                    Toast.makeText(this, "Failed to create society. Try again.", Toast.LENGTH_SHORT).show()
+                }
             }
-            db.insert(FastConnectDbHelper.TABLE_SOCIETIES, null, values)
-            
-            Toast.makeText(this, "Society created successfully", Toast.LENGTH_SHORT).show()
-            finish()
         }
     }
 }
