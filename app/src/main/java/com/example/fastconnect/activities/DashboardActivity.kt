@@ -12,20 +12,16 @@ import com.example.fastconnect.fragments.NewsFragment
 import com.example.fastconnect.fragments.ProfileFragment
 import com.example.fastconnect.fragments.SocietiesFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
 
 /**
- * DashboardActivity - Main container/coordinator for all Fragments.
+ * DashboardActivity — Main container/coordinator for all Fragments.
  *
- * This Activity acts ONLY as a container (Modular UI Design constraint).
- * All primary UI content is implemented in Fragments.
- *
- * Updated for Assignment #03:
- * - Added NewsFragment for REST API data display (F1)
- * - Added BookmarksFragment for SQLite CRUD operations (F3)
+ * Updated for Assignment#04: Uses Firebase Auth for user data.
+ * All primary UI content is implemented in Fragments (Modular UI Design).
  */
 class DashboardActivity : AppCompatActivity() {
 
-    // User data received via Intent Extras
     private var userName: String = ""
     private var userEmail: String = ""
 
@@ -33,13 +29,13 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
 
-        // Receive user data from SignInActivity via Intent Extras
-        userName = intent.getStringExtra("USER_NAME") ?: "Student"
-        userEmail = intent.getStringExtra("USER_EMAIL") ?: ""
+        // Get user data from Intent Extras or Firebase Auth
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        userName = intent.getStringExtra("USER_NAME") ?: currentUser?.displayName ?: "Student"
+        userEmail = intent.getStringExtra("USER_EMAIL") ?: currentUser?.email ?: ""
 
         Toast.makeText(this, "Welcome, $userName!", Toast.LENGTH_SHORT).show()
 
-        // Setup BottomNavigationView for fragment switching
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
         bottomNav.setOnItemSelectedListener { item ->
@@ -49,7 +45,6 @@ class DashboardActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_news -> {
-                    // F1: Load NewsFragment for REST API data display
                     loadFragment(NewsFragment.newInstance())
                     true
                 }
@@ -62,37 +57,24 @@ class DashboardActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_bookmarks -> {
-                    // F3: Load BookmarksFragment for SQLite CRUD
                     loadFragment(BookmarksFragment.newInstance())
-                    true
-                }
-                R.id.nav_profile -> {
-                    loadFragment(ProfileFragment.newInstance(userName, userEmail))
                     true
                 }
                 else -> false
             }
         }
 
-        // Load HomeFragment by default on first launch
         if (savedInstanceState == null) {
             bottomNav.selectedItemId = R.id.nav_home
         }
     }
 
-    /**
-     * Loads a Fragment into the container using fragment transactions.
-     */
     private fun loadFragment(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
     }
 
-    /**
-     * Handle back press for fragment back stack.
-     * If a child fragment (e.g., CourseDetail, AddEditBookmark) is showing, pop back.
-     */
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
         if (supportFragmentManager.backStackEntryCount > 0) {
