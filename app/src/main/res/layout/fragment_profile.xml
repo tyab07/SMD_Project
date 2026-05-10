@@ -173,10 +173,11 @@
                 android:layout_height="wrap_content" />
 
             <TextView
+                android:id="@+id/tvNotifications"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="16dp"
-                android:text="⚙️ Account Settings"
+                android:text="🔔 Notifications"
                 android:textAppearance="?attr/textAppearanceBodyLarge" />
 
             <com.google.android.material.divider.MaterialDivider
