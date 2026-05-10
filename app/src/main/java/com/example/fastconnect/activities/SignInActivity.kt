@@ -2,129 +2,130 @@ package com.example.fastconnect.activities
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.EditText
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fastconnect.R
+import com.example.fastconnect.firebase.FirebaseHelper
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.auth.FirebaseAuth
 
 /**
- * SignInActivity - Handles user login.
- *
- * Requirement F1: Passes user data (email, name) to DashboardActivity via Intent Extras.
- * Data flows: SignInActivity → Intent.putExtra() → DashboardActivity → Bundle → Fragments
+ * SignInActivity — Handles user login via Firebase Authentication (F1).
  */
 class SignInActivity : AppCompatActivity() {
+
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_signin)
 
+        auth = FirebaseAuth.getInstance()
+
         val emailInput = findViewById<TextInputEditText>(R.id.emailInput)
         val passwordInput = findViewById<TextInputEditText>(R.id.passwordInput)
         val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
         val toSignUp = findViewById<TextView>(R.id.toSignUp)
-        
+
         val roleSelection = intent.getStringExtra("ROLE_SELECTION") ?: "user"
         val tvSubtitle = findViewById<TextView>(R.id.tvSubtitle)
+        
         if (roleSelection == "admin") {
             tvSubtitle.text = "Sign in to Administrator Dashboard"
-            toSignUp.visibility = android.view.View.GONE
+            toSignUp.visibility = View.GONE
             findViewById<TextView>(R.id.tvWelcome).text = "Admin Access"
         } else {
             tvSubtitle.text = "Sign in to continue to FAST Hub"
         }
 
-        // Check if returning from SignUpActivity with registration data
-        // F1: Receive data back from SignUpActivity
-        val registeredName = intent.getStringExtra("REGISTERED_NAME")
         val registeredEmail = intent.getStringExtra("REGISTERED_EMAIL")
         if (!registeredEmail.isNullOrEmpty()) {
             emailInput.setText(registeredEmail)
-            Toast.makeText(this, "Account created! Please sign in.", Toast.LENGTH_SHORT).show()
         }
 
-        // F1: Login
         btnLogin.setOnClickListener {
             val email = emailInput.text?.toString()?.trim() ?: ""
             val password = passwordInput.text?.toString()?.trim() ?: ""
 
-            if (email.isEmpty()) {
-                emailInput.error = "Please enter your email"
-                return@setOnClickListener
-            }
-            if (password.isEmpty()) {
-                passwordInput.error = "Please enter your password"
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Please enter all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Check hardcoded admin if role is admin
-            if (roleSelection == "admin") {
-                if (email == "tayyab@gmail.com" && password == "123") {
-                    val prefs = getSharedPreferences("FastConnectPrefs", MODE_PRIVATE)
-                    prefs.edit().apply {
-                        putBoolean("IS_LOGGED_IN", true)
-                        putLong("USER_ID", 0L)
-                        putString("USER_NAME", "Admin Tayyab")
-                        putString("USER_ROLE", "admin")
-                        apply()
+            btnLogin.isEnabled = false
+            btnLogin.text = "Signing in..."
+
+            auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this) { task ->
+                    if (task.isSuccessful) {
+                        val user = auth.currentUser ?: return@addOnCompleteListener
+                        handleSuccessfulLogin(user.uid, user.displayName ?: "", email, roleSelection)
+                    } else {
+                        btnLogin.isEnabled = true
+                        btnLogin.text = "LOGIN"
+                        Toast.makeText(this, "Login failed: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                     }
-    
-                    Toast.makeText(this, "Admin Login Successful!", Toast.LENGTH_SHORT).show()
-                    val intent = Intent(this, AdminDashboardActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                } else {
-                    Toast.makeText(this, "Invalid Administrator Credentials.", Toast.LENGTH_SHORT).show()
                 }
-                return@setOnClickListener
-            }
+        }
 
-            // Regular user login via DB
-            val dbHelper = com.example.fastconnect.db.FastConnectDbHelper(this)
-            val user = dbHelper.checkUserLogin(email, password)
+        toSignUp.setOnClickListener {
+            startActivity(Intent(this, SignUpActivity::class.java))
+        }
+    }
 
-            if (user == null) {
-                // Not found or incorrect password
-                val existingAccount = dbHelper.getUserByEmail(email)
-                if (existingAccount == null) {
-                    Toast.makeText(this, "User not found. Please sign up.", Toast.LENGTH_LONG).show()
-                    val intent = Intent(this, SignUpActivity::class.java)
-                    startActivity(intent)
-                } else {
-                    Toast.makeText(this, "Incorrect password.", Toast.LENGTH_SHORT).show()
-                }
-                return@setOnClickListener
-            }
+    private fun handleSuccessfulLogin(uid: String, displayName: String, email: String, roleSelection: String) {
+        FirebaseHelper.getUserProfile(uid) { user ->
+            val userName = user?.name ?: displayName
+            val userRole = user?.role ?: "user"
 
-            // Save session
             val prefs = getSharedPreferences("FastConnectPrefs", MODE_PRIVATE)
             prefs.edit().apply {
                 putBoolean("IS_LOGGED_IN", true)
-                putLong("USER_ID", user.id)
-                putString("USER_NAME", user.name)
-                putString("USER_ROLE", user.role)
+                putString("USER_UID", uid)
+                putString("USER_NAME", userName)
+                putString("USER_EMAIL", email)
+                putString("USER_ROLE", userRole)
                 apply()
             }
 
             Toast.makeText(this, "Login Successful!", Toast.LENGTH_SHORT).show()
 
-            // F1: Pass data to DashboardActivity using Intent Extras
-            val intent = Intent(this, DashboardActivity::class.java)
-            intent.putExtra("USER_ID", user.id)
-            intent.putExtra("USER_NAME", user.name)
-            intent.putExtra("USER_EMAIL", user.email)
-            intent.putExtra("USER_ROLE", user.role)
+            // Check if user is logging into the correct portal
+            if (roleSelection == "admin" && userRole != "admin") {
+                FirebaseAuth.getInstance().signOut()
+                Toast.makeText(this@SignInActivity, "Access Denied: You are not an Admin", Toast.LENGTH_SHORT).show()
+                val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
+                btnLogin.isEnabled = true
+                btnLogin.text = "LOGIN"
+                return@getUserProfile
+            } else if (roleSelection == "user" && userRole == "admin") {
+                FirebaseAuth.getInstance().signOut()
+                Toast.makeText(this@SignInActivity, "Access Denied: Please use the Administrative Portal", Toast.LENGTH_SHORT).show()
+                val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
+                btnLogin.isEnabled = true
+                btnLogin.text = "LOGIN"
+                return@getUserProfile
+            }
+
+            // Navigate and CLEAR the backstack to prevent the "Role Selection loop"
+            val targetActivity = if (userRole == "admin") {
+                AdminDashboardActivity::class.java
+            } else {
+                DashboardActivity::class.java
+            }
+
+            val intent = Intent(this, targetActivity).apply {
+                putExtra("USER_UID", uid)
+                putExtra("USER_NAME", userName)
+                putExtra("USER_EMAIL", email)
+                putExtra("USER_ROLE", userRole)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
             startActivity(intent)
             finish()
-        }
-
-        // Navigate to Sign Up
-        toSignUp.setOnClickListener {
-            val intent = Intent(this, SignUpActivity::class.java)
-            startActivity(intent)
         }
     }
 }
