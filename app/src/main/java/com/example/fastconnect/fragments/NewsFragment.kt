@@ -16,7 +16,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.fastconnect.R
 import com.example.fastconnect.adapters.NewsAdapter
 import com.example.fastconnect.api.NewsApiService
-import com.example.fastconnect.db.FastConnectDbHelper
+import com.example.fastconnect.firebase.FirebaseHelper
 import com.example.fastconnect.models.NewsArticle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -37,7 +37,6 @@ class NewsFragment : Fragment() {
     private lateinit var progressBar: View
     private lateinit var emptyLayout: View
     private lateinit var emptyMessage: TextView
-    private lateinit var dbHelper: FastConnectDbHelper
 
     companion object {
         fun newInstance(): NewsFragment = NewsFragment()
@@ -51,8 +50,6 @@ class NewsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        dbHelper = FastConnectDbHelper(requireContext())
 
         // Bind views
         rvNews = view.findViewById(R.id.rvNews)
@@ -121,33 +118,53 @@ class NewsFragment : Fragment() {
     }
 
     /**
-     * Enhanced: Long-press to save a news article as a bookmark in SQLite.
-     * Bridges the API and Database modules.
+     * Enhanced: Long-press to save a news article as a bookmark in Firebase.
      */
     private fun saveArticleAsBookmark(article: NewsArticle) {
         AlertDialog.Builder(requireContext())
             .setTitle("Save to Bookmarks")
             .setMessage("Save \"${article.title}\" to your bookmarks?")
             .setPositiveButton("Save") { _, _ ->
-                viewLifecycleOwner.lifecycleScope.launch {
-                    withContext(Dispatchers.IO) {
-                        // Get or create "Saved News" folder
-                        val folders = dbHelper.getAllFolders()
+                val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+                val currentUser = auth.currentUser
+                
+                if (currentUser != null) {
+                    // Firebase calls are asynchronous. We call them directly.
+                    FirebaseHelper.getAllFolders { folders ->
                         val savedNewsFolder = folders.find { it.name == "Saved News" }
-                        val folderId = savedNewsFolder?.id ?: dbHelper.insertFolder("Saved News")
-
-                        dbHelper.insertBookmark(
-                            title = article.title ?: "News Article",
-                            url = article.url ?: "",
-                            note = article.description ?: "",
-                            folderId = folderId
-                        )
+                        
+                        if (savedNewsFolder != null) {
+                            saveToFolder(savedNewsFolder.id, article)
+                        } else {
+                            // Create folder if it doesn't exist
+                            FirebaseHelper.insertFolder("Saved News") { success, folderId ->
+                                if (success && folderId != null) {
+                                    saveToFolder(folderId, article)
+                                }
+                            }
+                        }
+                        // UI updates should happen on the main thread
+                        activity?.runOnUiThread {
+                            Toast.makeText(requireContext(), "✅ Saved to Bookmarks!", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    Toast.makeText(requireContext(), "✅ Saved to Bookmarks!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Please log in to save bookmarks", Toast.LENGTH_SHORT).show()
                 }
             }
             .setNegativeButton("Cancel", null)
             .show()
+    }
+
+    private fun saveToFolder(folderId: String, article: NewsArticle) {
+        FirebaseHelper.insertBookmark(
+            title = article.title ?: "News Article",
+            url = article.url ?: "",
+            note = article.description ?: "",
+            folderId = folderId
+        ) { success ->
+            // Optional: Handle individual bookmark insertion success/failure here
+        }
     }
 
     // ==================== UI State Helpers ====================
