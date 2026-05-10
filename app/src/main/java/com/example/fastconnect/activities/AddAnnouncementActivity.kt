@@ -1,6 +1,5 @@
 package com.example.fastconnect.activities
 
-import android.content.ContentValues
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -12,11 +11,18 @@ import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fastconnect.R
-import com.example.fastconnect.db.FastConnectDbHelper
+import com.example.fastconnect.firebase.FirebaseHelper
+import com.example.fastconnect.models.Society
 
+/**
+ * AddAnnouncementActivity — Admin screen to create announcements/events.
+ *
+ * Updated for Assignment#04: Reads societies from Firebase for spinner,
+ * writes announcements to Firebase Realtime Database at /announcements/{pushId}.
+ */
 class AddAnnouncementActivity : AppCompatActivity() {
 
-    private var societyIds = mutableListOf<Long>()
+    private var societies = mutableListOf<Society>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,25 +40,18 @@ class AddAnnouncementActivity : AppCompatActivity() {
         val etDate = findViewById<EditText>(R.id.etDate)
         val btnSubmit = findViewById<Button>(R.id.btnSubmitAnn)
 
-        rgCategory.check(R.id.rbCourse) // default
-        rgType.check(R.id.rbAnnouncement) // default
+        rgCategory.check(R.id.rbCourse)
+        rgType.check(R.id.rbAnnouncement)
 
-        // Load societies for spinner
-        val dbHelper = FastConnectDbHelper(this)
-        val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM ${FastConnectDbHelper.TABLE_SOCIETIES}", null)
-        val societyNames = mutableListOf<String>()
-        
-        cursor.use {
-            while (it.moveToNext()) {
-                societyIds.add(it.getLong(it.getColumnIndexOrThrow(FastConnectDbHelper.COL_SOCIETY_ID)))
-                societyNames.add(it.getString(it.getColumnIndexOrThrow(FastConnectDbHelper.COL_SOCIETY_NAME)))
-            }
+        // F2: Load societies from Firebase for spinner
+        FirebaseHelper.getAllSocieties { societyList ->
+            societies.clear()
+            societies.addAll(societyList)
+            val societyNames = societies.map { it.name }
+            val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, societyNames)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinnerSociety.adapter = adapter
         }
-        
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, societyNames)
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerSociety.adapter = adapter
 
         rgCategory.setOnCheckedChangeListener { _, checkedId ->
             if (checkedId == R.id.rbSocietyCat) {
@@ -66,7 +65,7 @@ class AddAnnouncementActivity : AppCompatActivity() {
             val title = etTitle.text.toString().trim()
             val desc = etDesc.text.toString().trim()
             val date = etDate.text.toString().trim()
-            
+
             if (title.isEmpty() || desc.isEmpty() || date.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -74,32 +73,38 @@ class AddAnnouncementActivity : AppCompatActivity() {
 
             val category = if (rbCourse.isChecked) "course" else "society"
             val type = if (rbAnnouncement.isChecked) "announcement" else "event"
-            
-            var societyId: Long? = null
+
+            var societyId: String? = null
             if (category == "society") {
-                if (societyNames.isEmpty()) {
+                if (societies.isEmpty()) {
                     Toast.makeText(this, "Create a society first!", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
                 val selectedPos = spinnerSociety.selectedItemPosition
-                societyId = societyIds[selectedPos]
+                societyId = societies[selectedPos].id
             }
 
-            val writeDb = dbHelper.writableDatabase
-            val values = ContentValues().apply {
-                put(FastConnectDbHelper.COL_ANN_TITLE, title)
-                put(FastConnectDbHelper.COL_ANN_DESC, desc)
-                put(FastConnectDbHelper.COL_ANN_CATEGORY, category)
-                put(FastConnectDbHelper.COL_ANN_TYPE, type)
-                put(FastConnectDbHelper.COL_ANN_DATE, date)
-                if (societyId != null) {
-                    put(FastConnectDbHelper.COL_ANN_SOCIETY_ID, societyId)
+            btnSubmit.isEnabled = false
+            btnSubmit.text = "Creating..."
+
+            // F2: Write to Firebase Realtime Database
+            FirebaseHelper.addAnnouncement(
+                title = title,
+                description = desc,
+                category = category,
+                type = type,
+                date = date,
+                societyId = societyId
+            ) { success ->
+                if (success) {
+                    Toast.makeText(this, "Successfully created!", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    btnSubmit.isEnabled = true
+                    btnSubmit.text = "Submit"
+                    Toast.makeText(this, "Failed to create. Try again.", Toast.LENGTH_SHORT).show()
                 }
             }
-            
-            writeDb.insert(FastConnectDbHelper.TABLE_ANNOUNCEMENTS, null, values)
-            Toast.makeText(this, "Successfully created!", Toast.LENGTH_SHORT).show()
-            finish()
         }
     }
 }
