@@ -7,7 +7,13 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fastconnect.R
+import com.google.firebase.auth.FirebaseAuth
 
+/**
+ * AdminDashboardActivity — Admin hub for managing societies and announcements.
+ *
+ * Updated for Assignment#04: Uses FirebaseAuth.signOut() on logout.
+ */
 class AdminDashboardActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,8 +33,13 @@ class AdminDashboardActivity : AppCompatActivity() {
         }
 
         btnLogout.setOnClickListener {
+            // Sign out from Firebase Auth
+            FirebaseAuth.getInstance().signOut()
+
+            // Clear local session
             val prefs = getSharedPreferences("FastConnectPrefs", Context.MODE_PRIVATE)
             prefs.edit().clear().apply()
+
             Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show()
             val intent = Intent(this, RoleSelectionActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
