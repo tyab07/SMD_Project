@@ -41,6 +41,23 @@
         <activity android:name=".activities.AddSocietyActivity" />
         <activity android:name=".activities.AddAnnouncementActivity" />
 
+        <activity
+            android:name=".activities.NotificationInboxActivity"
+            android:exported="false"
+            android:label="Notifications"
+            android:theme="@style/Theme.AppCompat.NoActionBar" />
+
+        <service
+            android:name=".firebase.FastConnectMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="fast_connect_channel" />
     </application>
 
 </manifest>

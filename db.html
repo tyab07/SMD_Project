@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Database Assignment – Sir Umer Zahoor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 12pt;
+      color: #000;
+      background: #fff;
+      padding: 0;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      padding: 18mm 20mm 18mm 20mm;
+    }
+
+    .uni-header {
+      text-align: center;
+      border-bottom: 3px double #000;
+      padding-bottom: 10px;
+      margin-bottom: 12px;
+    }
+    .uni-header .logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 6px;
+    }
+    .uni-header .logo-circle {
+      width: 64px; height: 64px;
+      border: 2px solid #003366;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; font-size: 10pt; color: #003366;
+      text-align: center; line-height: 1.1;
+    }
+    .uni-header h1 {
+      font-size: 16pt;
+      font-weight: bold;
+      color: #003366;
+      letter-spacing: 1px;
+    }
+    .uni-header h2 {
+      font-size: 13pt;
+      font-weight: normal;
+      color: #333;
+    }
+    .uni-header p {
+      font-size: 11pt;
+      color: #555;
+    }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 16px 0;
+      font-size: 11pt;
+    }
+    .info-table td {
+      padding: 5px 10px;
+      border: 1px solid #999;
+    }
+    .info-table td:first-child {
+      font-weight: bold;
+      width: 38%;
+      background: #f0f4ff;
+    }
+
+    .instructions {
+      background: #fff8e1;
+      border-left: 4px solid #f0a500;
+      padding: 8px 12px;
+      margin-bottom: 18px;
+      font-size: 10.5pt;
+    }
+    .instructions ul { margin-left: 18px; }
+    .instructions li { margin: 3px 0; }
+
+    .section-title {
+      background: #003366;
+      color: #fff;
+      padding: 6px 12px;
+      font-size: 12pt;
+      font-weight: bold;
+      margin: 22px 0 10px 0;
+      letter-spacing: 0.5px;
+    }
+
+    .sub-section {
+      background: #dbe8f8;
+      color: #003366;
+      padding: 4px 10px;
+      font-size: 11pt;
+      font-weight: bold;
+      margin: 14px 0 8px 0;
+    }
+
+    .question {
+      margin: 10px 0 10px 0;
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+    }
+    .q-num {
+      font-weight: bold;
+      min-width: 28px;
+      color: #003366;
+    }
+    .q-text { flex: 1; line-height: 1.6; }
+
+    .code-block {
+      background: #f5f5f5;
+      border: 1px solid #ccc;
+      border-left: 3px solid #003366;
+      padding: 8px 12px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10pt;
+      margin: 6px 0 8px 28px;
+      white-space: pre-wrap;
+    }
+
+    .total-bar {
+      margin-top: 24px;
+      border-top: 3px double #000;
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12pt;
+      font-weight: bold;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 9pt;
+      color: #777;
+      border-top: 1px solid #ccc;
+      margin-top: 24px;
+      padding-top: 6px;
+    }
+
+    @media print {
+      .page { margin: 0; width: 100%; padding: 15mm 18mm; }
+      .section-title { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .sub-section { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .info-table td:first-child { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .instructions { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="uni-header">
+    <div class="logo-row">
+      <div class="logo-circle">FAST<br/>NUCES</div>
+      <div>
+        <h1>FAST National University of Computer and Emerging Sciences</h1>
+        <h2>Department of Computer Science</h2>
+      </div>
+    </div>
+    <p><strong>Database Systems — Assignment</strong></p>
+    <p>Topic: Indexes, Views, Triggers, DCL, Users, Roles &amp; SQL Sessions</p>
+  </div>
+
+  <!-- INFO TABLE (no blank fields) -->
+  <table class="info-table">
+    <tr><td>Course Title</td><td>Database Systems (CS-232 / CS-332)</td></tr>
+    <tr><td>Instructor</td><td>Umer Zahoor</td></tr>
+    <tr><td>Semester</td><td>Spring 2026</td></tr>
+    <tr><td>Total Marks</td><td>100</td></tr>
+  </table>
+
+  <!-- INSTRUCTIONS -->
+  <div class="instructions">
+    <strong>General Instructions:</strong>
+    <ul>
+      <li>Attempt <strong>ALL</strong> questions. Each section carries the marks indicated.</li>
+      <li>Write your Roll Number and Name clearly at the top of your answer sheet.</li>
+      <li>SQL queries must be syntactically correct and properly formatted.</li>
+      <li>Plagiarism will result in <strong>zero marks</strong> for all involved parties.</li>
+      <li>Clearly label each answer with its question number.</li>
+      <li>Late submissions will carry a 20% deduction per day.</li>
+    </ul>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION A – SHORT QUESTIONS                                       -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="section-title">SECTION A — Short Answer Questions &nbsp;&nbsp;[30 Marks]</div>
+  <p style="font-size:10pt; margin-bottom:8px; font-style:italic;">Answer each question concisely. Each question carries <strong>3 marks</strong>.</p>
+
+  <div class="question">
+    <span class="q-num">A1.</span>
+    <span class="q-text">A table <code>Orders</code> has 10 million rows. A query <code>SELECT * FROM Orders WHERE CustomerID = 5042</code> takes 45 seconds without an index. Explain precisely <em>why</em> a B+ Tree index on <code>CustomerID</code> can reduce this to milliseconds. In your answer, discuss fan-out, tree height, and the number of disk I/Os involved in both cases.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A2.</span>
+    <span class="q-text">A DBA creates a composite index <code>CREATE INDEX idx ON Sales(Region, Year, Revenue)</code>. For each of the following queries, state whether the index will be used (fully, partially, or not at all) and justify your answer:<br/>
+    &nbsp;&nbsp;(i) <code>WHERE Region = 'North'</code>&nbsp;&nbsp;
+    (ii) <code>WHERE Year = 2024</code>&nbsp;&nbsp;
+    (iii) <code>WHERE Region = 'North' AND Year = 2024</code>&nbsp;&nbsp;
+    (iv) <code>WHERE Revenue > 50000</code></span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A3.</span>
+    <span class="q-text">Explain why <em>both</em> of the following statements are true simultaneously: (i) "Indexes speed up SELECT queries," and (ii) "Too many indexes can slow down a database." What specific operations does an index negatively affect, and why? Also describe a scenario where a sequential scan is actually preferred over an indexed search.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A4.</span>
+    <span class="q-text">Consider this view definition:<br/>
+    <code style="font-family:Courier New; font-size:10pt;">CREATE VIEW HighEarners AS SELECT EmpID, Name, Salary, DeptID FROM Employee WHERE Salary > 80000;</code><br/>
+    (i) Is this view updatable? Justify with reference to the SQL updatability conditions.<br/>
+    (ii) If a user runs <code>INSERT INTO HighEarners VALUES (99, 'Zara', 75000, 3)</code>, what happens and why?<br/>
+    (iii) How does <code>WITH CHECK OPTION</code> change the behavior?</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A5.</span>
+    <span class="q-text">A materialized view <code>MV_RegionSales</code> computes <code>SUM(Revenue) GROUP BY Region</code> and was last refreshed at 8:00 AM. At 10:00 AM, a large batch of sales records is inserted. Explain: (i) what "staleness" means in this context; (ii) the difference between <em>complete refresh</em> and <em>incremental (fast) refresh</em>; and (iii) how the query optimizer can still exploit <code>MV_RegionSales</code> for a query asking for the total revenue per region (query rewriting).</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A6.</span>
+    <span class="q-text">A view <code>V</code> is defined as: <code>SELECT E.Name, D.DeptName, SUM(E.Salary) AS TotalSal FROM Employee E JOIN Department D ON E.DeptID = D.DeptID GROUP BY E.Name, D.DeptName</code>. A junior developer attempts <code>UPDATE V SET TotalSal = 90000 WHERE Name = 'Ali'</code>. Identify <strong>every</strong> reason this update will fail, citing the exact SQL standard rules for non-updatable views.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A7.</span>
+    <span class="q-text">Describe a scenario where using a BEFORE trigger instead of an AFTER trigger leads to a <em>logically incorrect</em> outcome. Then describe a scenario where an AFTER trigger would fail to prevent bad data if mistakenly written as a BEFORE trigger. Use the <code>Employee</code> table context in both cases.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A8.</span>
+    <span class="q-text">User <code>alice</code> was granted <code>UPDATE ON Employee WITH GRANT OPTION</code> by the DBA. Alice then granted the same privilege to <code>bob</code>. Bob granted it to <code>carol</code>. The DBA now runs <code>REVOKE UPDATE ON Employee FROM alice CASCADE</code>. Trace the exact chain of revocations that occurs. What happens if the DBA uses <code>RESTRICT</code> instead of <code>CASCADE</code>?</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A9.</span>
+    <span class="q-text">Two developers, <code>dev1</code> and <code>dev2</code>, are assigned a role <code>dev_role</code>. Later, <code>dev1</code> is found to have misused privileges. The DBA wants to revoke only <code>dev1</code>'s access without affecting <code>dev2</code> or the role itself, and without individual REVOKE statements for each privilege. Describe the correct approach using role management SQL (<code>CREATE ROLE</code>, <code>GRANT</code>, <code>REVOKE</code>), and explain why dropping the role would be wrong here.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">A10.</span>
+    <span class="q-text">An SQL session begins when a user authenticates and ends when the connection is closed. (i) What role does the <em>user-id</em> play throughout the lifecycle of a session in terms of privilege checking? (ii) If a user's role is modified (<code>ALTER ROLE</code>) while their session is active, when do the changes take effect — immediately or at the next session? (iii) How does the DBMS use the session context to enforce object-level security (e.g., which tables a user may query)?</span>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION B – SQL / QUERY BASED QUESTIONS                          -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="section-title">SECTION B — SQL / Query-Based Questions &nbsp;&nbsp;[40 Marks]</div>
+  <p style="font-size:10pt; margin-bottom:8px; font-style:italic;">Write complete, correctly-formatted SQL statements. Marks are allocated per sub-part.</p>
+
+  <div class="sub-section">Schema Reference</div>
+  <p style="font-size:10.5pt; margin-bottom:6px;">Use the following tables for all queries in this section:</p>
+  <div class="code-block">Employee(EmpID, Name, Age, Salary, DeptID, City)
+Department(DeptID, DeptName, ManagerID)
+Project(ProjID, ProjName, Budget, City)
+Works_On(EmpID, ProjID, Hours)</div>
+
+  <!-- B1: Indexes -->
+  <div class="sub-section">B1. Indexes (10 Marks)</div>
+
+  <div class="question">
+    <span class="q-num">(a)</span>
+    <span class="q-text">Write a SQL statement to create a <strong>single-attribute index</strong> on the <code>Name</code> column of the <code>Employee</code> table. Name the index <code>idx_emp_name</code>.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(b)</span>
+    <span class="q-text">Create a <strong>composite (multi-attribute) index</strong> on <code>Age</code> and <code>Salary</code> columns of the <code>Employee</code> table. Name the index <code>idx_age_salary</code>. Explain in one sentence why the order of columns in a composite index matters.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(c)</span>
+    <span class="q-text">Consider the query below. Identify which index(es) from (a) and (b) would be used, and explain how the B+ Tree index helps process this range query efficiently.</span>
+  </div>
+  <div class="code-block">SELECT Name, Salary
+FROM Employee
+WHERE Age > 25 AND Age &lt; 28;</div>
+
+  <div class="question">
+    <span class="q-num">(d)</span>
+    <span class="q-text">Give <strong>two concrete reasons</strong> why creating an index on every attribute of a table is not recommended.</span>
+  </div>
+
+  <!-- B2: Views -->
+  <div class="sub-section">B2. Views (15 Marks)</div>
+
+  <div class="question">
+    <span class="q-num">(a)</span>
+    <span class="q-text">Create a view called <code>DeveloperView</code> that shows the <code>EmpID</code>, <code>Name</code>, <code>Salary</code>, and <code>City</code> of all employees working in the department named <code>'Development'</code>.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(b)</span>
+    <span class="q-text">Create a view called <code>SeattleView</code> that shows all employees (Name, DeptName, Salary) located in <code>'Seattle'</code>. This view requires a <strong>join</strong> between <code>Employee</code> and <code>Department</code>.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(c)</span>
+    <span class="q-text">Write a SQL query that retrieves all records from <code>DeveloperView</code> where the employee's <code>Salary</code> is greater than 60,000. Also write the equivalent <em>rewritten query</em> (i.e., the query that the DBMS would internally execute using the base table instead of the view).</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(d)</span>
+    <span class="q-text">Consider the following attempt to insert a row into <code>SeattleView</code>:
+    <div class="code-block">INSERT INTO SeattleView VALUES ('Ali', 'HR', 55000);</div>
+    Will this statement succeed? Explain <strong>why or why not</strong>, referencing the conditions for updatable views.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(e)</span>
+    <span class="q-text">A materialized view <code>MV_DeptSalary</code> stores pre-aggregated department salary totals. Write the SQL to <strong>create</strong> this materialized view. Then show how a query on department salary totals would be <em>rewritten</em> to use this materialized view for optimization.</span>
+  </div>
+
+  <!-- B3: Triggers -->
+  <div class="sub-section">B3. Triggers (15 Marks)</div>
+
+  <div class="question">
+    <span class="q-num">(a)</span>
+    <span class="q-text">Write a <strong>BEFORE INSERT</strong> row-level trigger called <code>trg_min_salary</code> on the <code>Employee</code> table. The trigger must enforce that no employee can be inserted with a <code>Salary</code> less than 30,000. If the salary is below the minimum, raise an appropriate application error / signal.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(b)</span>
+    <span class="q-text">Write an <strong>AFTER UPDATE</strong> row-level trigger called <code>trg_salary_audit</code> that fires whenever the <code>Salary</code> column of <code>Employee</code> is updated. It should insert a record into an <code>AuditLog(EmpID, OldSalary, NewSalary, ChangeDate)</code> table.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(c)</span>
+    <span class="q-text">Differentiate between <strong>BEFORE</strong> and <strong>AFTER</strong> triggers using the context of the <code>Employee</code> table. Give one practical use-case for each type.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(d)</span>
+    <span class="q-text">What is the difference between a <strong>row-level</strong> and a <strong>statement-level</strong> trigger? Provide an example scenario where a statement-level trigger would be more appropriate than a row-level trigger.</span>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION C – DCL, USERS, ROLES                                    -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="section-title">SECTION C — DCL: GRANT, REVOKE, Users &amp; Roles &nbsp;&nbsp;[20 Marks]</div>
+
+  <div class="sub-section">C1. GRANT Statement (8 Marks)</div>
+
+  <div class="question">
+    <span class="q-num">(a)</span>
+    <span class="q-text">Write SQL to grant the user <code>alice</code> the privileges <code>SELECT</code> and <code>INSERT</code> on the <code>Employee</code> table.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(b)</span>
+    <span class="q-text">Grant <code>SELECT</code> privilege on the <code>Employee</code> table to <strong>all users</strong> in the database. Which keyword do you use?</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(c)</span>
+    <span class="q-text">Grant the user <code>bob</code> the ability to <strong>UPDATE only the Salary column</strong> of the <code>Employee</code> table, and also allow <code>bob</code> to <strong>pass this privilege on</strong> to other users. Write the complete SQL statement.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(d)</span>
+    <span class="q-text">What does <code>GRANT ALL PRIVILEGES ON Employee TO charlie;</code> do? List at least <strong>four</strong> privileges that would be covered by this statement.</span>
+  </div>
+
+  <div class="sub-section">C2. REVOKE Statement (6 Marks)</div>
+
+  <div class="question">
+    <span class="q-num">(a)</span>
+    <span class="q-text">Revoke <code>INSERT</code> privilege on the <code>Employee</code> table from the user <code>alice</code>.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(b)</span>
+    <span class="q-text">Write a single SQL statement to revoke <code>SELECT</code> and <code>UPDATE</code> privileges on the <code>Department</code> table from the users <code>alice</code> and <code>bob</code> simultaneously.</span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(c)</span>
+    <span class="q-text">Revoke <strong>ALL PRIVILEGES</strong> on the <code>Project</code> table from the user <code>charlie</code>. What happens to the privileges that <code>charlie</code> may have granted to other users? (Briefly explain the <em>cascade</em> effect.)</span>
+  </div>
+
+  <div class="sub-section">C3. Users &amp; Roles (6 Marks)</div>
+
+  <div class="question">
+    <span class="q-num">(a)</span>
+    <span class="q-text">Write SQL to:
+      <br/>&nbsp;&nbsp;&nbsp;(i)  Create a new user <code>dev_user</code> with password <code>'Secure@123'</code>.<br/>
+      &nbsp;&nbsp;&nbsp;(ii) Grant <code>dev_user</code> the ability to connect to (create a session on) the database.
+    </span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(b)</span>
+    <span class="q-text">
+      Create a role called <code>developer_role</code>. Grant it <code>SELECT</code>, <code>INSERT</code>, and <code>UPDATE</code> privileges on the <code>Employee</code> table. Then assign this role to users <code>dev_user</code> and <code>alice</code>.
+    </span>
+  </div>
+
+  <div class="question">
+    <span class="q-num">(c)</span>
+    <span class="q-text">Write the SQL to <strong>drop</strong> the role <code>developer_role</code>. What precaution should be taken before dropping a role?</span>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <!-- SECTION D – LONG QUESTIONS                                       -->
+  <!-- ══════════════════════════════════════════════════════════════════ -->
+  <div class="section-title">SECTION D — Long Answer Questions &nbsp;&nbsp;[20 Marks]</div>
+  <p style="font-size:10pt; margin-bottom:8px; font-style:italic;">Attempt <strong>BOTH</strong> questions. Each question carries <strong>10 marks</strong>.</p>
+
+  <div class="sub-section">D1. Comprehensive Scenario (10 Marks)</div>
+  <div class="question">
+    <span class="q-num"></span>
+    <span class="q-text">
+      A university library management system has the following tables:
+      <div class="code-block">Member(MemberID, Name, Email, MemberType, City)
+Book(BookID, Title, Author, Price, Category)
+Loan(LoanID, MemberID, BookID, LoanDate, ReturnDate, Fine)</div>
+      Answer all parts:
+      <br/><br/>
+      <strong>(a)</strong> Create an index <code>idx_book_author</code> on the <code>Author</code> column of the <code>Book</code> table. Then write a query that performs an <em>exact-match</em> lookup on <code>Author = 'George Orwell'</code> and explain how the index helps avoid a sequential scan.
+      <br/><br/>
+      <strong>(b)</strong> Create a view <code>ActiveLoans</code> that shows <code>MemberID</code>, <code>Name</code>, <code>Title</code>, <code>LoanDate</code> for all loans where <code>ReturnDate IS NULL</code>. Query this view to list all active loans from the city <code>'Islamabad'</code>.
+      <br/><br/>
+      <strong>(c)</strong> Write a trigger <code>trg_fine_calc</code> that fires <strong>BEFORE INSERT</strong> on the <code>Loan</code> table. If the current date is more than 14 days after the <code>LoanDate</code>, it should automatically compute a fine of <strong>Rs. 10 per overdue day</strong> and store it in the <code>Fine</code> column.
+      <br/><br/>
+      <strong>(d)</strong> Design a full privilege management scheme for three user roles: <em>Librarian</em> (full access to all tables), <em>Member</em> (can only SELECT from Book and view their own Loan records via a view), and <em>Admin</em> (can CREATE and DROP tables, and grant privileges). Write the SQL for creating these roles and assigning appropriate privileges.
+    </span>
+  </div>
+
+
+  <div class="sub-section">D2. Trigger, DCL &amp; Role Design Scenario (10 Marks)</div>
+  <div class="question">
+    <span class="q-num"></span>
+    <span class="q-text">
+      An online banking system has the following schema:
+      <div class="code-block">Customer(CustID, Name, Email, City, AccountType)
+Account(AccID, CustID, Balance, OpenDate, Status)
+Transaction(TxnID, AccID, TxnType, Amount, TxnDate, PerformedBy)</div>
+      Answer all parts:
+      <br/><br/>
+      <strong>(a)</strong> Write an <strong>AFTER INSERT</strong> row-level trigger called <code>trg_low_balance_alert</code> on the <code>Transaction</code> table. After every debit transaction (<code>TxnType = 'DEBIT'</code>), check whether the account's remaining <code>Balance</code> falls below 1,000. If so, insert a warning record into an <code>Alert(AccID, AlertMsg, AlertDate)</code> table.
+      <br/><br/>
+      <strong>(b)</strong> Write a <strong>BEFORE UPDATE</strong> row-level trigger called <code>trg_prevent_closed_txn</code> on the <code>Account</code> table that prevents any update to <code>Balance</code> if the account's <code>Status</code> is <code>'CLOSED'</code>. Raise a meaningful error message if the condition is violated.
+      <br/><br/>
+      <strong>(c)</strong> Design a complete DCL scheme for the following three roles:<br/>
+      &nbsp;&nbsp;&bull; <em>Teller</em> — can SELECT and INSERT into <code>Transaction</code>; can SELECT <code>Account</code> and <code>Customer</code>.<br/>
+      &nbsp;&nbsp;&bull; <em>Manager</em> — has all Teller privileges plus can UPDATE <code>Account.Balance</code> and UPDATE <code>Account.Status</code>; can grant Teller privileges to others.<br/>
+      &nbsp;&nbsp;&bull; <em>Auditor</em> — read-only SELECT on all three tables; cannot modify any data.<br/>
+      Write the full SQL: CREATE ROLE, GRANT privileges to roles, and assign roles to sample users <code>u_teller1</code>, <code>u_manager1</code>, and <code>u_auditor1</code>.
+      <br/><br/>
+      <strong>(d)</strong> The Auditor's role needs to be modified: add <code>SELECT</code> on a new table <code>Alert</code> without affecting any other privileges. Write the SQL using <code>ALTER ROLE</code> or an equivalent approach. Then explain what happens to currently active sessions of <code>u_auditor1</code> — do the new privileges apply immediately or only after reconnecting? Justify your answer.
+    </span>
+  </div>
+
+  <!-- TOTAL / FOOTER -->
+  <div class="total-bar">
+    <span>Marks Distribution: Section A (30) + Section B (40) + Section C (20) + Section D (20) = 110</span>
+    <span>Total: ______ / 110</span>
+  </div>
+
+  <div class="footer">
+    FAST-NUCES &nbsp;|&nbsp; Database Systems Assignment &nbsp;|&nbsp; Umer Zahoor &nbsp;|&nbsp; Spring 2026<br/>
+    <em>"Academic integrity is the foundation of all learning."</em>
+  </div>
+
+</div>
+</body>
+</html>
