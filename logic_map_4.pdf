@@ -1,0 +1,203 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /Resources 4 0 R /MediaBox [0 0 612 792] /Contents 5 0 R >>
+endobj
+4 0 obj
+<< /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >>
+endobj
+5 0 obj
+<< /Length 3500 >>
+stream
+BT
+/F1 24 Tf
+50 750 Td
+(Firebase Integration - Logic Map 4) Tj
+ET
+
+BT
+/F1 14 Tf
+50 700 Td
+(Architecture Overview) Tj
+ET
+
+BT
+/F1 11 Tf
+50 680 Td
+(The Firebase integration provides cloud-based backend services for the SMD Project.) Tj
+ET
+
+BT
+50 660 Td
+(Key Components:) Tj
+ET
+
+BT
+50 640 Td
+(1. Authentication Service) Tj
+ET
+
+BT
+65 620 Td
+(- Email/Password Authentication) Tj
+ET
+
+BT
+65 600 Td
+(- Google Sign-In Integration) Tj
+ET
+
+BT
+65 580 Td
+(- User Session Management) Tj
+ET
+
+BT
+65 560 Td
+(- Secure Token Handling) Tj
+ET
+
+BT
+50 540 Td
+(2. Realtime Database) Tj
+ET
+
+BT
+65 520 Td
+(- JSON-based data structure) Tj
+ET
+
+BT
+65 500 Td
+(- Real-time synchronization) Tj
+ET
+
+BT
+65 480 Td
+(- Offline persistence) Tj
+ET
+
+BT
+65 460 Td
+(- Security rules enforcement) Tj
+ET
+
+BT
+50 440 Td
+(3. Cloud Firestore) Tj
+ET
+
+BT
+65 420 Td
+(- Document and collection storage) Tj
+ET
+
+BT
+65 400 Td
+(- Advanced querying capabilities) Tj
+ET
+
+BT
+65 380 Td
+(- Transaction support) Tj
+ET
+
+BT
+65 360 Td
+(- Automatic indexing) Tj
+ET
+
+BT
+50 340 Td
+(4. Cloud Storage) Tj
+ET
+
+BT
+65 320 Td
+(- File upload and download) Tj
+ET
+
+BT
+65 300 Td
+(- Media handling) Tj
+ET
+
+BT
+65 280 Td
+(- Scalable storage) Tj
+ET
+
+BT
+65 260 Td
+(- Access control) Tj
+ET
+
+BT
+/F1 14 Tf
+50 230 Td
+(Data Flow) Tj
+ET
+
+BT
+/F1 11 Tf
+50 210 Td
+(User Request -> Kotlin Android App -> Firebase SDK) Tj
+ET
+
+BT
+50 190 Td
+(-> Authentication & Authorization -> Database Operations) Tj
+ET
+
+BT
+50 170 Td
+(-> Return Data to Client) Tj
+ET
+
+BT
+/F1 14 Tf
+50 140 Td
+(Integration Points) Tj
+ET
+
+BT
+/F1 11 Tf
+50 120 Td
+(- AndroidManifest.xml configuration) Tj
+ET
+
+BT
+50 100 Td
+(- google-services.json configuration file) Tj
+ET
+
+BT
+50 80 Td
+(- Firebase dependency initialization) Tj
+ET
+
+BT
+50 60 Td
+(- Security rules and access control) Tj
+ET
+
+endstream
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000214 00000 n 
+0000000314 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+3864
+%%EOF
