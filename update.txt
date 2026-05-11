@@ -21,7 +21,7 @@ Plus enhanced usability features for project excellence.
 
 ===============================================================================
 NEW FILES ADDED
-===============================================================================
+=============================================================================== 
 
 --- Models ---
 1. app/src/main/java/com/example/fastconnect/models/NewsArticle.kt
