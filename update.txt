@@ -23,7 +23,7 @@ Plus enhanced usability features for project excellence.
 NEW FILES ADDED
 =============================================================================== 
 
---- Models ---
+--- Models --- 
 1. app/src/main/java/com/example/fastconnect/models/NewsArticle.kt
    PURPOSE: Data class mapping REST API JSON fields (title, description,
    url, urlToImage, publishedAt, source). Used by Retrofit + Gson.
