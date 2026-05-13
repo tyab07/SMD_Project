@@ -11,7 +11,7 @@ A modern Android application built with **Kotlin**, **Jetpack Compose**, and **F
 ### Assignment Phases:
 - **Assignment #02**: Initial UI/UX with basic navigation
 - **Assignment #03**: REST API integration + SQLite persistence
-- **Assignment #04**: Firebase cloud migration with real-time sync
+- **Assignment #04**: Firebase cloud migration with real-time sync.
 
  
 ---
