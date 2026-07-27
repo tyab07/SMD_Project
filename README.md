@@ -7,7 +7,7 @@ A modern Android application built with **Kotlin**, **Jetpack Compose**, and **F
 ## 📋 Project Overview
 
 **FastConnect** is a multi-assignment university project that evolved through three major phases:
-
+ 
 ### Assignment Phases:
 - **Assignment #02**: Initial UI/UX with basic navigation
 - **Assignment #03**: REST API integration + SQLite persistence
