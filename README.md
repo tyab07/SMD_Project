@@ -3,7 +3,6 @@
 A modern Android application built with **Kotlin**, **Jetpack Compose**, and **Firebase** for managing student societies, announcements, and news articles with real-time synchronization.
 
 ---
-
 ## 📋 Project Overview
 
 **FastConnect** is a multi-assignment university project that evolved through three major phases:
